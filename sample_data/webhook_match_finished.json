@@ -1,0 +1,194 @@
+{
+  "transaction_id": "fe46fb4d-5cbc-4e20-b438-c004583dc5f8",
+  "event": "match_status_finished",
+  "event_id": "78da747e-5302-45ac-bda3-35f0fdff8ac4",
+  "third_party_id": "096796d6-95e5-4d92-a5bb-957e59230a42",
+  "app_id": "5d35a587-ffc8-47ce-8b04-5bf0cd4093c1",
+  "timestamp": "2024-06-16T17:09:37Z",
+  "retry_count": 0,
+  "version": 1,
+  "payload": {
+    "id": "1-1a0060f7-32d0-4322-9cf4-a1adaaf0fb9a",
+    "organizer_id": "f0e8a591-08fd-4619-9d59-d97f0571842e",
+    "region": "GLOBAL",
+    "game": "ow2",
+    "version": 207,
+    "entity": {
+      "id": "5f2188f8-4f41-477f-9ea1-bbafa466a60b",
+      "name": "S1 EMEA Master: Road to Esports World Cup Central - Playoffs",
+      "type": "championship"
+    },
+    "teams": [
+      {
+        "id": "a359db61-26e2-44e0-8961-e0b373f4db21",
+        "name": "SpaceStation",
+        "type": "premade",
+        "avatar": "https://distribution.faceit-cdn.net/images/c93d20aa-1c0d-46bf-b171-b63796206620.jpeg",
+        "leader_id": "423b8943-30c9-4436-8a22-51ca77aa7fca",
+        "co_leader_id": "",
+        "roster": [
+          {
+            "id": "423b8943-30c9-4436-8a22-51ca77aa7fca",
+            "nickname": "FunnyAstro1",
+            "avatar": "https://distribution.faceit-cdn.net/images/dad52e39-40f6-45ee-947d-b48a61aa33c6.jpeg",
+            "game_id": "408221114",
+            "game_name": "FunnyAstro",
+            "game_skill_level": 10,
+            "membership": "",
+            "anticheat_required": false
+          },
+          {
+            "id": "a332d27e-fe19-4077-89f8-27391a581460",
+            "nickname": "LandonOW",
+            "avatar": "https://distribution.faceit-cdn.net/images/0484f24c-258e-4a01-aed7-c404afa919d7.jpeg",
+            "game_id": "384795915",
+            "game_name": "Landon",
+            "game_skill_level": 10,
+            "membership": "",
+            "anticheat_required": false
+          },
+          {
+            "id": "5f60ca5b-92be-4673-b2c6-06623b111467",
+            "nickname": "HadiOW2",
+            "avatar": "https://distribution.faceit-cdn.net/images/8393a0ec-58c1-442b-9123-2911c6f8b813.jpeg",
+            "game_id": "441234931",
+            "game_name": "Hadi",
+            "game_skill_level": 10,
+            "membership": "",
+            "anticheat_required": false
+          },
+          {
+            "id": "016d21e3-fe55-4f07-ba4f-b61e7339bd18",
+            "nickname": "seic0e",
+            "avatar": "https://distribution.faceit-cdn.net/images/d85aaa51-9b1e-40ad-ba5f-df5bded78292.jpeg",
+            "game_id": "459589780",
+            "game_name": "Seicoe",
+            "game_skill_level": 10,
+            "membership": "",
+            "anticheat_required": false
+          },
+          {
+            "id": "a12c7612-d162-4a26-8053-ece68c1f67f7",
+            "nickname": "Backboneee",
+            "avatar": "https://distribution.faceit-cdn.net/images/07981518-3293-4800-ba3a-eaeaa2f567aa.jpeg",
+            "game_id": "447204958",
+            "game_name": "Backbone",
+            "game_skill_level": 9,
+            "membership": "",
+            "anticheat_required": false
+          }
+        ],
+        "substitutions": 0,
+        "substitutes": [
+          {
+            "id": "39042a9c-ac5f-47b4-8376-29c45676c2e9",
+            "nickname": "SparkRow",
+            "avatar": "https://distribution.faceit-cdn.net/images/9bb8d755-f71a-40bc-a7b0-f2d0fd817746.jpeg",
+            "game_id": "138565873",
+            "game_name": "SparkR",
+            "game_skill_level": 10,
+            "membership": "",
+            "anticheat_required": false
+          },
+          {
+            "id": "4a2e533d-1b97-4324-8070-0ba47edd887f",
+            "nickname": "Suji_",
+            "avatar": "",
+            "game_id": "851822529",
+            "game_name": "Suji",
+            "game_skill_level": 4,
+            "membership": "",
+            "anticheat_required": false
+          }
+        ]
+      },
+      {
+        "id": "e85cb266-39cc-4840-ac56-c22c942bd093",
+        "name": "GG Peps",
+        "type": "premade",
+        "avatar": "https://distribution.faceit-cdn.net/images/059224ec-411b-4b04-a476-2c4a32d83409.jpeg",
+        "leader_id": "981131d6-8276-404c-9ea7-87dcedf77765",
+        "co_leader_id": "",
+        "roster": [
+          {
+            "id": "981131d6-8276-404c-9ea7-87dcedf77765",
+            "nickname": "NagaOW",
+            "avatar": "https://distribution.faceit-cdn.net/images/13ab1e8f-0037-4e38-902d-1c11e7b8ef7e.jpeg",
+            "game_id": "102094279",
+            "game_name": "Naga",
+            "game_skill_level": 9,
+            "membership": "",
+            "anticheat_required": false
+          },
+          {
+            "id": "2acfb6df-f298-4b92-8ab8-2141635f28e4",
+            "nickname": "TRED2474",
+            "avatar": "https://distribution.faceit-cdn.net/images/e9f92552-30d7-4284-884d-da6b9477386d.jpeg",
+            "game_id": "809754970",
+            "game_name": "Tred",
+            "game_skill_level": 9,
+            "membership": "",
+            "anticheat_required": false
+          },
+          {
+            "id": "9609be75-e561-493f-b1f1-000c4517555a",
+            "nickname": "xzodyal",
+            "avatar": "https://distribution.faceit-cdn.net/images/afb502cf-0502-41b7-8f1d-243fa25d45c2.jpeg",
+            "game_id": "496280247",
+            "game_name": "xzodyal",
+            "game_skill_level": 9,
+            "membership": "",
+            "anticheat_required": false
+          },
+          {
+            "id": "1ab8c25f-15f0-4707-acc9-4718c88157da",
+            "nickname": "FDGod_OW",
+            "avatar": "https://distribution.faceit-cdn.net/images/ec7751f1-767c-490e-89cd-d731669f0e83.jpeg",
+            "game_id": "414695891",
+            "game_name": "FDGod",
+            "game_skill_level": 9,
+            "membership": "",
+            "anticheat_required": false
+          },
+          {
+            "id": "d615be2c-19d1-49bf-a5f3-216377efb1cf",
+            "nickname": "yoham_",
+            "avatar": "https://distribution.faceit-cdn.net/images/c7930341-407a-47b3-8c04-af009c9d0362.jpeg",
+            "game_id": "440171807",
+            "game_name": "yoham",
+            "game_skill_level": 9,
+            "membership": "",
+            "anticheat_required": false
+          }
+        ],
+        "substitutions": 0,
+        "substitutes": [
+          {
+            "id": "a6ee9fe7-52a7-44a4-9d58-901973c2b55b",
+            "nickname": "Lv1Croook",
+            "avatar": "https://distribution.faceit-cdn.net/images/3dc4b737-61ee-4e7f-8630-c79fd2e27e15.jpeg",
+            "game_id": "465173105",
+            "game_name": "Lv1Crook",
+            "game_skill_level": 9,
+            "membership": "",
+            "anticheat_required": false
+          },
+          {
+            "id": "8aeb215f-a30e-4953-96ed-9dcdf625ce71",
+            "nickname": "StelliosOW",
+            "avatar": "https://distribution.faceit-cdn.net/images/573835d4-16c0-4e63-a4fa-b529cdc9c2cd.jpeg",
+            "game_id": "445877524",
+            "game_name": "Stellios",
+            "game_skill_level": 10,
+            "membership": "",
+            "anticheat_required": false
+          }
+        ]
+      }
+    ],
+    "created_at": "2024-06-14T18:02:57Z",
+    "updated_at": "2024-06-16T17:09:37Z",
+    "started_at": "2024-06-16T16:57:47Z",
+    "finished_at": "2024-06-16T17:09:37Z"
+  }
+}
