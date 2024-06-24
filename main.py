@@ -201,7 +201,7 @@ match_id = input_match_url()
 match_data = get_match_data(match_id, API_KEY)
 match_stats = get_match_stats(match_id, API_KEY)
 
-with open("./output/match_report.md", "w") as file:
+with open("./output/match_report.txt", "w") as file:
     generate_match_result(file, match_data)
 
     scores = calculate_player_scores_for_match(match_data, match_stats, API_KEY)
