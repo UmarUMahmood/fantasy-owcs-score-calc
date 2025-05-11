@@ -67,7 +67,8 @@ def get_team_stats(team_index, map_index, match_stats, match_data, api_key):
             }
             for player_data in players
         ],
-        key=lambda x: (role_order[x["player_stats"]["Role"]], x["name"])
+        # uses default value of 3 if no role - might occur when a player leaves early
+        key=lambda x: (role_order.get(x["player_stats"]["Role"], 3), x["name"])
     )
 
 def calculate_score(eliminations, deaths, damage, healing):
