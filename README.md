@@ -1,6 +1,6 @@
 # Fantasy OWCS Score Calc
 
-Generate a match report from a link to a FACEIT Overwatch match that also contains scores for the [Fantasy OWCS web app](https://owcsfantasy.web.app/).
+Generate a match report from a link to a FACEIT Overwatch match that also contains scores for the [Fantasy OWCS web app](https://owfantasy.com/).
 
 ## Installation
 
