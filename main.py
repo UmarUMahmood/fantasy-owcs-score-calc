@@ -71,10 +71,10 @@ def get_team_stats(team_index, map_index, match_stats, match_data, api_key):
     )
 
 def calculate_score(eliminations, deaths, damage, healing):
-    elimination_points = (eliminations / 3) * 1
+    elimination_points = eliminations // 3
     death_points = deaths * -1
-    damage_points = (damage / 2000) * 0.5
-    healing_points = (healing / 2000) * 0.5
+    damage_points = (damage // 2000) * 0.5
+    healing_points = (healing // 2000) * 0.5
     return elimination_points + death_points + damage_points + healing_points
 
 
