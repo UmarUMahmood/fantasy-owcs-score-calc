@@ -57,3 +57,11 @@ This web application allows users to easily generate Fantasy OWCS score reports 
 
 2. **Access the application:**
    Open your browser and navigate to `http://127.0.0.1:5000`
+
+## Deploy to Vercel
+
+1. **Deploy with Vercel CLI:**
+
+    ```sh
+    vercel
+    ```
