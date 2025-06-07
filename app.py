@@ -29,6 +29,10 @@ def get_player_details(player_id, api_key):
     return fetch_data_from_api(f"players/{player_id}", api_key)
 
 def get_team_name(faction_id, match_data):
+    # Handle draw case where faction_id is empty string
+    if not faction_id or faction_id == "":
+        return "Draw"
+    
     return next(
         (team["name"] for team in match_data["teams"].values() if team["faction_id"] == faction_id),
         "Failed to get Team Name"
@@ -71,11 +75,15 @@ def calculate_score(eliminations, deaths, damage, healing):
 def calculate_player_scores_for_each_map(match_data, match_stats, api_key):
     match_summary = []
     for i, round_data in enumerate(match_stats["rounds"]):
+        # Handle missing 'Winner' key or empty winner
+        winner_faction = round_data["round_stats"].get("Winner", "")
+        winner = get_team_name(winner_faction, match_data)
+        
         result = {
             "match_round": i,
             "mode": round_data["round_stats"]["OW2 Mode"],
             "map": get_map_name(round_data["round_stats"]["Map"], match_data),
-            "winner": get_team_name(round_data["round_stats"]["Winner"], match_data),
+            "winner": winner,
             "map_score": round_data["round_stats"]["Score Summary"],
             "teams": []
         }
@@ -123,6 +131,7 @@ def generate_ascii_table_for_match_rounds(match_summary, side_by_side=False):
     output = []
     for match_round in match_summary:
         round_info = f"Map {match_round['match_round'] + 1}: {match_round['mode']} - {match_round['map']}"
+        
         score_summary = f"{match_round['teams'][0]['name']} {match_round['map_score']} {match_round['teams'][1]['name']}"
         
         output.append(round_info)
@@ -265,6 +274,8 @@ def generate_match_result(match_data):
     team2 = match_data["teams"]["faction2"]["name"]
     team2_score = match_data["results"]["score"]["faction2"]
     competition_name = match_data["competition_name"]
+    
+    # Overall match result - no draw indication needed
     return f"{competition_name}\n{team1} {team1_score} - {team2} {team2_score}\n\n"
 
 def process_match(match_url, side_by_side=False):
