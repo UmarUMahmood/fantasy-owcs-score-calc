@@ -760,8 +760,27 @@
 
         async function loadData() {
             try {
+                console.log('Fetching leaderboard data...');
                 const response = await fetch('/api/leaderboard-data');
-                allData = await response.json();
+                
+                console.log('Response status:', response.status);
+                console.log('Response headers:', [...response.headers.entries()]);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('API Error Response:', errorText);
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+                
+                const data = await response.json();
+                console.log('Received data:', data);
+                
+                if (data.error) {
+                    console.error('API returned error:', data);
+                    throw new Error(data.error);
+                }
+                
+                allData = data;
                 
                 if (allData.error) {
                     console.error('Error loading data:', allData.error);
@@ -772,6 +791,13 @@
                 setupTransfers();
             } catch (error) {
                 console.error('Error loading data:', error);
+                
+                // Show error message to user
+                const loadingEls = document.querySelectorAll('.loading');
+                loadingEls.forEach(el => {
+                    el.textContent = `Error loading data: ${error.message}`;
+                    el.style.color = '#ff6b6b';
+                });
             }
         }
 

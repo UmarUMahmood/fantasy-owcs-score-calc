@@ -546,7 +546,26 @@ def static_files(filename):
 def get_leaderboard_data():
     """API endpoint to get all processed leaderboard data."""
     try:
+        # Debug: Check if directory exists and list files
+        leaderboard_path = get_leaderboard_path()
+        
+        debug_info = {
+            "leaderboard_path": leaderboard_path,
+            "path_exists": os.path.exists(leaderboard_path),
+            "files": []
+        }
+        
+        if os.path.exists(leaderboard_path):
+            debug_info["files"] = [f for f in os.listdir(leaderboard_path) if f.endswith('.json')]
+        
+        print(f"Debug info: {debug_info}")  # This will show in Vercel logs
+        
         data = process_all_gameweeks()
+        
+        # Add debug info to response if no data found
+        if not data.get("leaderboards"):
+            data["debug"] = debug_info
+        
         response = jsonify(data)
         
         # Add ETag for conditional requests
@@ -559,7 +578,14 @@ def get_leaderboard_data():
             
         return response
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        error_response = {
+            "error": str(e),
+            "error_type": type(e).__name__,
+            "leaderboard_path": get_leaderboard_path(),
+            "path_exists": os.path.exists(get_leaderboard_path()) if get_leaderboard_path() else False
+        }
+        print(f"API Error: {error_response}")  # This will show in Vercel logs
+        return jsonify(error_response), 500
 
 @app.route('/process', methods=['POST'])
 @cache_control(max_age=3600, s_maxage=3600)
