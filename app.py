@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, jsonify
+from flask import Flask, request, render_template, jsonify, send_from_directory
 from dotenv import load_dotenv
 import os
 import requests
@@ -6,11 +6,29 @@ from table2ascii import table2ascii as t2a, PresetStyle
 from collections import defaultdict
 import json
 from typing import Dict, List, Set, Tuple
+from datetime import datetime, timedelta
+import hashlib
 
 load_dotenv()
 API_KEY = os.getenv("API_KEY")
 
 app = Flask(__name__)
+
+# Cache control decorator
+def cache_control(max_age=3600, s_maxage=None):
+    def decorator(f):
+        def decorated_function(*args, **kwargs):
+            response = f(*args, **kwargs)
+            if hasattr(response, 'headers'):
+                if s_maxage:
+                    response.headers['Cache-Control'] = f'public, max-age={max_age}, s-maxage={s_maxage}'
+                else:
+                    response.headers['Cache-Control'] = f'public, max-age={max_age}'
+                response.headers['Vary'] = 'Accept-Encoding'
+            return response
+        decorated_function.__name__ = f.__name__
+        return decorated_function
+    return decorator
 
 # Helper Functions for match processing (keeping your existing code)
 def fetch_data_from_api(endpoint, api_key):
@@ -287,7 +305,7 @@ def process_match(match_url, side_by_side=False):
     except Exception as e:
         return f"Error processing match: {str(e)}"
 
-# New functions for leaderboard analysis
+# New functions for leaderboard analysis (keeping your existing code)
 def load_json_files(directory: str) -> Dict[str, List[Dict]]:
     """Load all JSON files from a directory, with the filename as the key."""
     gameweek_data = {}
@@ -555,27 +573,42 @@ def process_all_gameweeks():
 
 # Routes
 @app.route('/')
+@cache_control(max_age=300, s_maxage=300)  # 5 minutes cache
 def index():
-    return render_template('index.html')
+    response = app.response_class(
+        response=render_template('index.html'),
+        status=200,
+        mimetype='text/html'
+    )
+    return response
 
-@app.route('/leaderboards')
-def leaderboards():
-    return render_template('leaderboards.html')
-
-@app.route('/transfers')
-def transfers():
-    return render_template('transfers.html')
+@app.route('/static/<path:filename>')
+@cache_control(max_age=31536000)  # 1 year cache for static files
+def static_files(filename):
+    return send_from_directory('static', filename)
 
 @app.route('/api/leaderboard-data')
+@cache_control(max_age=300, s_maxage=300)  # 5 minutes cache
 def get_leaderboard_data():
     """API endpoint to get all processed leaderboard data."""
     try:
         data = process_all_gameweeks()
-        return jsonify(data)
+        response = jsonify(data)
+        
+        # Add ETag for conditional requests
+        content_hash = hashlib.md5(json.dumps(data, sort_keys=True).encode()).hexdigest()
+        response.headers['ETag'] = content_hash
+        
+        # Check if client has cached version
+        if request.headers.get('If-None-Match') == content_hash:
+            return '', 304  # Not Modified
+            
+        return response
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 @app.route('/process', methods=['POST'])
+@cache_control(max_age=3600, s_maxage=3600)  # 1 hour cache for match results
 def process():
     match_url = request.form.get('match_url')
     side_by_side = request.form.get('side_by_side') == 'true'
@@ -583,13 +616,31 @@ def process():
     if not match_url:
         return jsonify({"error": "No match URL provided"}), 400
     
+    # Create cache key based on match URL and settings
+    cache_key = hashlib.md5(f"{match_url}_{side_by_side}".encode()).hexdigest()
+    
     try:
         report = process_match(match_url, side_by_side)
-        return jsonify({"report": report})
+        response = jsonify({"report": report})
+        
+        # Add cache headers
+        response.headers['ETag'] = cache_key
+        
+        # Check if client has cached version
+        if request.headers.get('If-None-Match') == cache_key:
+            return '', 304  # Not Modified
+            
+        return response
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+# Health check endpoint (not cached)
+@app.route('/health')
+def health():
+    return jsonify({"status": "healthy"}), 200
 
 if __name__ == '__main__':
     os.makedirs('templates', exist_ok=True)
     os.makedirs('leaderboard-data', exist_ok=True)
+    os.makedirs('static', exist_ok=True)
     app.run(debug=True)

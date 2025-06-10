@@ -1,4 +1,4 @@
 .env
 .venv
 .vercel
-leaderboard-data
+leaderboard-data/*.json
