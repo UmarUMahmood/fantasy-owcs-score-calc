@@ -3,21 +3,14 @@
   "routes": [
     {
       "src": "/static/(.*)",
+      "dest": "/static/$1",
       "headers": {
         "Cache-Control": "public, max-age=31536000, immutable"
       }
     },
     {
-      "src": "/api/leaderboard-data",
-      "headers": {
-        "Cache-Control": "public, max-age=300, s-maxage=300"
-      }
-    },
-    {
-      "src": "/process",
-      "headers": {
-        "Cache-Control": "public, max-age=3600, s-maxage=3600"
-      }
+      "src": "/(.*)",
+      "dest": "/app.py"
     }
   ]
 }
