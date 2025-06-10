@@ -613,6 +613,32 @@ def process():
         return response
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+@app.route('/debug/files')
+def debug_files():
+    try:
+        leaderboard_path = get_leaderboard_path()
+        
+        result = {
+            "current_working_directory": os.getcwd(),
+            "leaderboard_path": leaderboard_path,
+            "path_exists": os.path.exists(leaderboard_path),
+            "files": [],
+            "all_files_in_parent": []
+        }
+        
+        if os.path.exists(leaderboard_path):
+            result["files"] = os.listdir(leaderboard_path)
+        
+        # List all files in parent directory
+        parent_dir = os.path.dirname(os.path.abspath(__file__))
+        parent_parent = os.path.dirname(parent_dir)
+        if os.path.exists(parent_parent):
+            result["all_files_in_parent"] = os.listdir(parent_parent)
+        
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e), "error_type": type(e).__name__}), 500
 
 @app.route('/health')
 def health():
