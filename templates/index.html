@@ -6,6 +6,10 @@
     <title>Fantasy OWCS Dashboard</title>
     <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
     <style>
+        /* ============================================================================
+           BASE STYLES
+           ============================================================================ */
+        
         html {
             color-scheme: dark;
         }
@@ -19,8 +23,28 @@
             background-color: #181a1b;
         }
 
+        /* Color Variables */
+        :root {
+            --primary-orange: #ec8302;
+            --dark-bg: #131516;
+            --medium-bg: #2a2d30;
+            --light-bg: #3a3e41;
+            --text-primary: #ffffff;
+            --text-secondary: #ccc;
+            --text-muted: #6c757d;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --tank-color: #ff6b35;
+            --dps-color: #ff1744;
+            --support-color: #00e676;
+        }
+
+        /* ============================================================================
+           LAYOUT COMPONENTS
+           ============================================================================ */
+
         .header {
-            background-color: #131516;
+            background-color: var(--dark-bg);
             padding: 20px 0;
             box-shadow: 0 2px 10px rgba(0,0,0,0.3);
             margin-bottom: 20px;
@@ -31,12 +55,22 @@
             margin: 0 auto;
             padding: 0 20px;
         }
-        
+
+        .main-content {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
         h1 {
-            color: #ec8302;
+            color: var(--primary-orange);
             text-align: center;
             margin: 0 0 20px 0;
         }
+
+        /* ============================================================================
+           NAVIGATION
+           ============================================================================ */
 
         .nav-tabs {
             display: flex;
@@ -46,8 +80,8 @@
         }
 
         .nav-tab {
-            background-color: #3a3e41;
-            color: #ffffff;
+            background-color: var(--light-bg);
+            color: var(--text-primary);
             border: none;
             padding: 12px 24px;
             cursor: pointer;
@@ -57,7 +91,7 @@
         }
 
         .nav-tab.active {
-            background-color: #ec8302;
+            background-color: var(--primary-orange);
             color: #000;
         }
 
@@ -65,15 +99,13 @@
             background-color: #4a4e51;
         }
 
-        .main-content {
-            max-width: 100%;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-        
+        /* ============================================================================
+           TAB CONTENT
+           ============================================================================ */
+
         .tab-content {
             display: none;
-            background-color: #131516;
+            background-color: var(--dark-bg);
             padding: 30px;
             border-radius: 0 0 8px 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.3);
@@ -83,30 +115,28 @@
             display: block;
         }
 
-        /* Match Calculator Styles */
-        .match-links {
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        
+        /* ============================================================================
+           FORMS AND INPUTS
+           ============================================================================ */
+
         label {
             display: block;
             margin-bottom: 10px;
             font-weight: bold;
         }
-        
-        input[type="text"] {
+
+        input[type="text"], select {
             width: 100%;
             padding: 12px;
             margin-bottom: 20px;
-            border: 1px solid #3a3e41;
+            border: 1px solid var(--light-bg);
             border-radius: 4px;
             box-sizing: border-box;
             font-size: 16px;
-            background-color: #2a2d30;
-            color: #ffffff;
+            background-color: var(--medium-bg);
+            color: var(--text-primary);
         }
-        
+
         button {
             background-color: #A35A00;
             color: white;
@@ -117,17 +147,26 @@
             font-size: 16px;
             transition: background-color 0.3s;
         }
-        
+
         button:hover {
-            background-color: rgb(243, 135, 2);
+            background-color: #f38702;
         }
-        
+
+        /* ============================================================================
+           MATCH CALCULATOR STYLES
+           ============================================================================ */
+
+        .match-links {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
         #loading {
             display: none;
             text-align: center;
             margin: 20px 0;
         }
-        
+
         #result {
             background-color: #181818;
             padding: 20px;
@@ -140,23 +179,26 @@
             margin-bottom: 15px;
             text-align: center;
         }
-        
+
         .copy-btn {
             margin-top: 15px;
-            background-color: #6c757d;
+            background-color: var(--text-muted);
         }
-        
+
         .copy-btn:hover {
             background-color: #5a6268;
         }
-        
+
         .success-message {
-            color: green;
+            color: var(--success-color);
             margin-left: 10px;
             display: none;
         }
 
-        /* Leaderboard and Transfer Styles */
+        /* ============================================================================
+           CONTROL PANELS
+           ============================================================================ */
+
         .controls {
             display: flex;
             flex-direction: column;
@@ -184,15 +226,19 @@
         }
 
         .controls input, .controls select, .controls-row input, .controls-row select {
-            background-color: #2a2d30;
-            color: #ffffff;
-            border: 1px solid #3a3e41;
+            background-color: var(--medium-bg);
+            color: var(--text-primary);
+            border: 1px solid var(--light-bg);
             border-radius: 4px;
             padding: 8px 12px;
             font-size: 14px;
+            margin-bottom: 0;
         }
 
-        /* Player Filter - Horizontal Layout */
+        /* ============================================================================
+           PLAYER FILTER COMPONENT
+           ============================================================================ */
+
         .player-filter-container {
             min-width: 300px;
             flex: 1;
@@ -205,18 +251,18 @@
             gap: 10px;
             cursor: pointer;
             padding: 8px 0;
-            border-bottom: 2px solid #3a3e41;
+            border-bottom: 2px solid var(--light-bg);
             margin-bottom: 10px;
         }
 
         .player-filter-header:hover {
-            color: #ec8302;
+            color: var(--primary-orange);
         }
 
         .filter-arrow {
             transition: transform 0.3s ease;
             font-size: 16px;
-            color: #ec8302;
+            color: var(--primary-orange);
         }
 
         .filter-arrow.expanded {
@@ -224,7 +270,7 @@
         }
 
         .selected-count {
-            background-color: #ec8302;
+            background-color: var(--primary-orange);
             color: #000;
             padding: 2px 8px;
             border-radius: 12px;
@@ -252,7 +298,7 @@
         }
 
         .reset-filter-btn {
-            background-color: #6c757d;
+            background-color: var(--text-muted);
             color: white;
             border: none;
             padding: 6px 12px;
@@ -285,9 +331,13 @@
             margin: 0;
             font-size: 12px;
             cursor: pointer;
-            color: #ec8302;
+            color: var(--primary-orange);
             font-weight: bold;
         }
+
+        /* ============================================================================
+           ROLE SECTIONS
+           ============================================================================ */
 
         .role-section {
             margin-bottom: 20px;
@@ -298,12 +348,12 @@
             font-weight: bold;
             margin-bottom: 10px;
             padding-bottom: 5px;
-            border-bottom: 1px solid #3a3e41;
+            border-bottom: 1px solid var(--light-bg);
         }
 
-        .role-title.tank { color: #ff6b35; }
-        .role-title.damage { color: #ff1744; }
-        .role-title.support { color: #00e676; }
+        .role-title.tank { color: var(--tank-color); }
+        .role-title.damage { color: var(--dps-color); }
+        .role-title.support { color: var(--support-color); }
 
         .players-list {
             display: flex;
@@ -333,18 +383,22 @@
             user-select: none;
         }
 
+        /* ============================================================================
+           GAMEWEEK TABS
+           ============================================================================ */
+
         .gameweek-tabs {
             display: flex;
             flex-wrap: wrap;
             gap: 5px;
             margin-bottom: 20px;
-            border-bottom: 2px solid #3a3e41;
+            border-bottom: 2px solid var(--light-bg);
             padding-bottom: 10px;
         }
 
         .gameweek-tab {
-            background-color: #3a3e41;
-            color: #ffffff;
+            background-color: var(--light-bg);
+            color: var(--text-primary);
             border: none;
             padding: 8px 16px;
             cursor: pointer;
@@ -354,13 +408,17 @@
         }
 
         .gameweek-tab.active {
-            background-color: #ec8302;
+            background-color: var(--primary-orange);
             color: #000;
         }
 
         .gameweek-tab:hover:not(.active) {
             background-color: #4a4e51;
         }
+
+        /* ============================================================================
+           STATISTICS DISPLAY
+           ============================================================================ */
 
         .stats-summary {
             display: flex;
@@ -370,7 +428,7 @@
         }
 
         .stat-card {
-            background-color: #2a2d30;
+            background-color: var(--medium-bg);
             padding: 15px;
             border-radius: 8px;
             text-align: center;
@@ -380,19 +438,23 @@
 
         .stat-card h3 {
             margin: 0 0 5px 0;
-            color: #ec8302;
+            color: var(--primary-orange);
             font-size: 24px;
         }
 
         .stat-card p {
             margin: 0;
-            color: #ccc;
+            color: var(--text-secondary);
             font-size: 14px;
         }
 
+        /* ============================================================================
+           TABLES
+           ============================================================================ */
+
         .table-container {
             overflow-x: auto;
-            background-color: #2a2d30;
+            background-color: var(--medium-bg);
             border-radius: 8px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
             width: 100%;
@@ -407,14 +469,14 @@
         th, td {
             padding: 12px 8px;
             text-align: left;
-            border-bottom: 1px solid #3a3e41;
+            border-bottom: 1px solid var(--light-bg);
             word-wrap: break-word;
             position: relative;
         }
 
         th {
-            background-color: #3a3e41;
-            color: #ec8302;
+            background-color: var(--light-bg);
+            color: var(--primary-orange);
             font-weight: bold;
             cursor: pointer;
             user-select: none;
@@ -446,13 +508,13 @@
         th.sort-asc::after {
             content: '↑';
             opacity: 1;
-            color: #ec8302;
+            color: var(--primary-orange);
         }
 
         th.sort-desc::after {
             content: '↓';
             opacity: 1;
-            color: #ec8302;
+            color: var(--primary-orange);
         }
 
         tr:nth-child(even) {
@@ -460,8 +522,12 @@
         }
 
         tr:hover {
-            background-color: #2a2d30;
+            background-color: var(--medium-bg);
         }
+
+        /* ============================================================================
+           POSITION CHANGES AND TRANSFERS
+           ============================================================================ */
 
         .position-change {
             font-weight: bold;
@@ -470,27 +536,62 @@
         }
 
         .position-up {
-            color: #28a745;
+            color: var(--success-color);
             background-color: rgba(40, 167, 69, 0.1);
         }
 
         .position-down {
-            color: #dc3545;
+            color: var(--danger-color);
             background-color: rgba(220, 53, 69, 0.1);
         }
 
         .position-same {
-            color: #6c757d;
+            color: var(--text-muted);
         }
 
-        .role-tank { color: #ff6b35; font-weight: bold; }
-        .role-dps { color: #ff1744; font-weight: bold; }
-        .role-support { color: #00e676; font-weight: bold; }
+        .transfer-list {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .transfer-in {
+            color: var(--success-color);
+        }
+
+        .transfer-out {
+            color: var(--danger-color);
+        }
+
+        /* Position change intensity colors */
+        .change-huge-up { background-color: rgba(40, 167, 69, 0.3) !important; }
+        .change-big-up { background-color: rgba(40, 167, 69, 0.2) !important; }
+        .change-small-up { background-color: rgba(40, 167, 69, 0.1) !important; }
+        .change-huge-down { background-color: rgba(220, 53, 69, 0.3) !important; }
+        .change-big-down { background-color: rgba(220, 53, 69, 0.2) !important; }
+        .change-small-down { background-color: rgba(220, 53, 69, 0.1) !important; }
+
+        /* ============================================================================
+           ROLE COLORS
+           ============================================================================ */
+
+        .role-tank { color: var(--tank-color); font-weight: bold; }
+        .role-dps { color: var(--dps-color); font-weight: bold; }
+        .role-support { color: var(--support-color); font-weight: bold; }
+
+        /* ============================================================================
+           UTILITY CLASSES
+           ============================================================================ */
 
         .no-data {
             text-align: center;
             padding: 40px;
-            color: #6c757d;
+            color: var(--text-muted);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--primary-orange);
         }
 
         footer {
@@ -505,34 +606,10 @@
             color: #3391ff;
         }
 
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #ec8302;
-        }
+        /* ============================================================================
+           RESPONSIVE DESIGN
+           ============================================================================ */
 
-        .transfer-list {
-            font-size: 12px;
-            color: #ccc;
-        }
-
-        .transfer-in {
-            color: #28a745;
-        }
-
-        .transfer-out {
-            color: #dc3545;
-        }
-
-        /* Color coding for position changes */
-        .change-huge-up { background-color: rgba(40, 167, 69, 0.3) !important; }
-        .change-big-up { background-color: rgba(40, 167, 69, 0.2) !important; }
-        .change-small-up { background-color: rgba(40, 167, 69, 0.1) !important; }
-        .change-huge-down { background-color: rgba(220, 53, 69, 0.3) !important; }
-        .change-big-down { background-color: rgba(220, 53, 69, 0.2) !important; }
-        .change-small-down { background-color: rgba(220, 53, 69, 0.1) !important; }
-
-        /* Responsive table headers */
         @media (max-width: 1200px) {
             th, td {
                 font-size: 12px;
@@ -584,6 +661,9 @@
     </style>
 </head>
 <body>
+    <!-- ============================================================================
+         HEADER
+         ============================================================================ -->
     <div class="header">
         <div class="header-content">
             <h1>Fantasy OWCS Dashboard</h1>
@@ -595,6 +675,9 @@
         </div>
     </div>
 
+    <!-- ============================================================================
+         MAIN CONTENT
+         ============================================================================ -->
     <div class="main-content">
         <!-- Match Calculator Tab -->
         <div id="match-calculator" class="tab-content active">
@@ -607,7 +690,6 @@
             <form id="matchForm">
                 <label for="matchUrl">Paste FACEIT Match URL:</label>
                 <input type="text" id="matchUrl" name="match_url" placeholder="https://www.faceit.com/en/ow2/room/1-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" required>
-                
                 <button type="submit">Generate Report</button>
             </form>
             
@@ -656,7 +738,6 @@
                 </div>
 
                 <div class="gameweek-tabs" id="leaderboard-tabs"></div>
-                
                 <div class="stats-summary" id="leaderboard-stats"></div>
 
                 <div class="table-container">
@@ -739,11 +820,18 @@
         </div>
     </div>
     
+    <!-- ============================================================================
+         FOOTER
+         ============================================================================ -->
     <footer>
         <p>Fantasy OWCS Dashboard | Made by Umarrii | <a href="https://owfantasy.com/" target="_blank">Visit Fantasy OWCS</a></p>
     </footer>
     
     <script>
+        // ============================================================================
+        // GLOBAL VARIABLES
+        // ============================================================================
+        
         let allData = null;
         let currentLeaderboardGameweek = null;
         let currentTransfersGameweek = null;
@@ -752,7 +840,10 @@
         let selectedPlayers = new Set();
         let exactMatchMode = false;
 
-        // Load data when page loads
+        // ============================================================================
+        // INITIALIZATION
+        // ============================================================================
+        
         document.addEventListener('DOMContentLoaded', function() {
             loadData();
             setupMatchCalculator();
@@ -762,9 +853,6 @@
             try {
                 console.log('Fetching leaderboard data...');
                 const response = await fetch('/api/leaderboard-data');
-                
-                console.log('Response status:', response.status);
-                console.log('Response headers:', [...response.headers.entries()]);
                 
                 if (!response.ok) {
                     const errorText = await response.text();
@@ -781,12 +869,6 @@
                 }
                 
                 allData = data;
-                
-                if (allData.error) {
-                    console.error('Error loading data:', allData.error);
-                    return;
-                }
-
                 setupLeaderboards();
                 setupTransfers();
             } catch (error) {
@@ -801,19 +883,21 @@
             }
         }
 
+        // ============================================================================
+        // MATCH CALCULATOR
+        // ============================================================================
+        
         function setupMatchCalculator() {
-            document.getElementById('matchForm').addEventListener('submit', async function(e) {
+            const form = document.getElementById('matchForm');
+            const loadingDiv = document.getElementById('loading');
+            const resultContainer = document.getElementById('result-container');
+            const resultDiv = document.getElementById('result');
+            
+            form.addEventListener('submit', async function(e) {
                 e.preventDefault();
                 
                 const formData = new FormData(this);
-                const matchUrl = formData.get('match_url');
-                
-                // Always use side by side as default
-                formData.set('side_by_side', 'true');
-                
-                const loadingDiv = document.getElementById('loading');
-                const resultContainer = document.getElementById('result-container');
-                const resultDiv = document.getElementById('result');
+                formData.set('side_by_side', 'true'); // Always use side by side
                 
                 loadingDiv.style.display = 'block';
                 resultContainer.style.display = 'none';
@@ -846,13 +930,15 @@
                 navigator.clipboard.writeText(resultText).then(function() {
                     const successMsg = document.getElementById('copySuccess');
                     successMsg.style.display = 'inline';
-                    setTimeout(function() {
-                        successMsg.style.display = 'none';
-                    }, 2000);
+                    setTimeout(() => successMsg.style.display = 'none', 2000);
                 });
             });
         }
 
+        // ============================================================================
+        // NAVIGATION
+        // ============================================================================
+        
         function switchMainTab(tabName) {
             // Hide all tab contents
             document.querySelectorAll('.tab-content').forEach(tab => {
@@ -869,6 +955,10 @@
             event.target.classList.add('active');
         }
 
+        // ============================================================================
+        // LEADERBOARD SETUP
+        // ============================================================================
+        
         function setupLeaderboards() {
             const loadingEl = document.getElementById('leaderboard-loading');
             const contentEl = document.getElementById('leaderboard-content');
@@ -883,20 +973,14 @@
 
             // Setup tabs
             const tabsContainer = document.getElementById('leaderboard-tabs');
-            const gameweeks = Object.keys(allData.leaderboards).sort((a, b) => {
-                // Sort gameweeks properly (gw1, gw2, ..., playoff1, playoff2, etc.)
-                const aNum = parseInt(a.replace(/\D/g, ''));
-                const bNum = parseInt(b.replace(/\D/g, ''));
-                if (a.includes('playoff') && !b.includes('playoff')) return 1;
-                if (!a.includes('playoff') && b.includes('playoff')) return -1;
-                return aNum - bNum;
-            });
+            const gameweeks = Object.keys(allData.leaderboards).sort(sortGameweeks);
 
             gameweeks.forEach((gameweek, index) => {
                 const tab = document.createElement('button');
                 tab.className = 'gameweek-tab';
                 tab.textContent = formatGameweekName(gameweek);
                 tab.onclick = () => switchLeaderboardGameweek(gameweek);
+                
                 if (index === gameweeks.length - 1) {
                     tab.classList.add('active');
                     currentLeaderboardGameweek = gameweek;
@@ -904,13 +988,9 @@
                 tabsContainer.appendChild(tab);
             });
 
-            // Setup player filter
+            // Setup components
             setupPlayerFilterLayout();
-            
-            // Setup table sorting
             setupTableSorting('leaderboard-table');
-            
-            // Display initial data
             displayLeaderboard();
             
             // Setup event listeners
@@ -931,19 +1011,14 @@
 
             // Setup tabs
             const tabsContainer = document.getElementById('transfers-tabs');
-            const gameweeks = Object.keys(allData.transfers).sort((a, b) => {
-                const aNum = parseInt(a.replace(/\D/g, ''));
-                const bNum = parseInt(b.replace(/\D/g, ''));
-                if (a.includes('playoff') && !b.includes('playoff')) return 1;
-                if (!a.includes('playoff') && b.includes('playoff')) return -1;
-                return aNum - bNum;
-            });
+            const gameweeks = Object.keys(allData.transfers).sort(sortGameweeks);
 
             gameweeks.forEach((gameweek, index) => {
                 const tab = document.createElement('button');
                 tab.className = 'gameweek-tab';
                 tab.textContent = formatGameweekName(gameweek);
                 tab.onclick = () => switchTransfersGameweek(gameweek);
+                
                 if (index === gameweeks.length - 1) {
                     tab.classList.add('active');
                     currentTransfersGameweek = gameweek;
@@ -951,15 +1026,32 @@
                 tabsContainer.appendChild(tab);
             });
 
-            // Setup table sorting
+            // Setup components
             setupTableSorting('transfers-table');
-
-            // Display initial data
             displayTransfers();
             
             // Setup event listeners
             document.getElementById('player-search').addEventListener('input', displayTransfers);
             document.getElementById('role-filter').addEventListener('change', displayTransfers);
+        }
+
+        // ============================================================================
+        // UTILITY FUNCTIONS
+        // ============================================================================
+        
+        function sortGameweeks(a, b) {
+            const aNum = parseInt(a.replace(/\D/g, ''));
+            const bNum = parseInt(b.replace(/\D/g, ''));
+            if (a.includes('playoff') && !b.includes('playoff')) return 1;
+            if (!a.includes('playoff') && b.includes('playoff')) return -1;
+            return aNum - bNum;
+        }
+
+        function formatGameweekName(gameweek) {
+            if (gameweek.startsWith('playoff')) {
+                return gameweek.replace('playoff', 'Playoff ');
+            }
+            return gameweek.toUpperCase();
         }
 
         function setupTableSorting(tableId) {
@@ -979,9 +1071,7 @@
                     }
                     
                     // Update header classes
-                    headers.forEach(h => {
-                        h.classList.remove('sort-asc', 'sort-desc');
-                    });
+                    headers.forEach(h => h.classList.remove('sort-asc', 'sort-desc'));
                     this.classList.add(currentSortDirection === 'asc' ? 'sort-asc' : 'sort-desc');
                     
                     // Re-display data with new sorting
@@ -994,13 +1084,25 @@
             });
         }
 
-        function formatGameweekName(gameweek) {
-            if (gameweek.startsWith('playoff')) {
-                return gameweek.replace('playoff', 'Playoff ');
-            }
-            return gameweek.toUpperCase();
+        function sortData(data, sortKey, direction) {
+            return data.sort((a, b) => {
+                let aVal = a[sortKey];
+                let bVal = b[sortKey];
+                
+                // Handle numeric values
+                if (typeof aVal === 'string' && !isNaN(parseFloat(aVal))) {
+                    aVal = parseFloat(aVal);
+                    bVal = parseFloat(bVal);
+                }
+                
+                return direction === 'asc' ? (aVal > bVal ? 1 : -1) : (aVal < bVal ? 1 : -1);
+            });
         }
 
+        // ============================================================================
+        // PLAYER FILTER
+        // ============================================================================
+        
         function setupPlayerFilterLayout() {
             const rolesContainer = document.getElementById('player-filter-roles');
             
@@ -1021,56 +1123,34 @@
                 });
             });
 
-            // Build the roles HTML with case-insensitive sorting
+            // Build the roles HTML
+            const roleConfigs = [
+                { key: 'tank', title: 'Tank', class: 'tank' },
+                { key: 'dps', title: 'Damage', class: 'damage' },
+                { key: 'support', title: 'Support', class: 'support' }
+            ];
+
             let rolesHTML = '';
-            
-            // Tank section
-            if (playersByRole.tank.size > 0) {
-                rolesHTML += '<div class="role-section">';
-                rolesHTML += '<div class="role-title tank">Tank</div>';
-                rolesHTML += '<div class="players-list">';
-                Array.from(playersByRole.tank).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase())).forEach(player => {
-                    rolesHTML += `
-                        <div class="player-checkbox">
-                            <input type="checkbox" id="player-${player}" value="${player}" onchange="handlePlayerCheckbox('${player}')">
-                            <label for="player-${player}">${player}</label>
-                        </div>
-                    `;
-                });
-                rolesHTML += '</div></div>';
-            }
-            
-            // DPS section
-            if (playersByRole.dps.size > 0) {
-                rolesHTML += '<div class="role-section">';
-                rolesHTML += '<div class="role-title damage">Damage</div>';
-                rolesHTML += '<div class="players-list">';
-                Array.from(playersByRole.dps).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase())).forEach(player => {
-                    rolesHTML += `
-                        <div class="player-checkbox">
-                            <input type="checkbox" id="player-${player}" value="${player}" onchange="handlePlayerCheckbox('${player}')">
-                            <label for="player-${player}">${player}</label>
-                        </div>
-                    `;
-                });
-                rolesHTML += '</div></div>';
-            }
-            
-            // Support section
-            if (playersByRole.support.size > 0) {
-                rolesHTML += '<div class="role-section">';
-                rolesHTML += '<div class="role-title support">Support</div>';
-                rolesHTML += '<div class="players-list">';
-                Array.from(playersByRole.support).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase())).forEach(player => {
-                    rolesHTML += `
-                        <div class="player-checkbox">
-                            <input type="checkbox" id="player-${player}" value="${player}" onchange="handlePlayerCheckbox('${player}')">
-                            <label for="player-${player}">${player}</label>
-                        </div>
-                    `;
-                });
-                rolesHTML += '</div></div>';
-            }
+            roleConfigs.forEach(config => {
+                if (playersByRole[config.key].size > 0) {
+                    rolesHTML += `<div class="role-section">`;
+                    rolesHTML += `<div class="role-title ${config.class}">${config.title}</div>`;
+                    rolesHTML += `<div class="players-list">`;
+                    
+                    Array.from(playersByRole[config.key])
+                        .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
+                        .forEach(player => {
+                            rolesHTML += `
+                                <div class="player-checkbox">
+                                    <input type="checkbox" id="player-${player}" value="${player}" onchange="handlePlayerCheckbox('${player}')">
+                                    <label for="player-${player}">${player}</label>
+                                </div>
+                            `;
+                        });
+                    
+                    rolesHTML += `</div></div>`;
+                }
+            });
             
             rolesContainer.innerHTML = rolesHTML;
         }
@@ -1113,9 +1193,7 @@
                 checkbox.checked = false;
             });
             
-            // Uncheck exact match checkbox
             document.getElementById('exact-match-checkbox').checked = false;
-            
             updateSelectedCount();
             displayLeaderboard();
         }
@@ -1131,6 +1209,10 @@
             }
         }
 
+        // ============================================================================
+        // GAMEWEEK SWITCHING
+        // ============================================================================
+        
         function switchLeaderboardGameweek(gameweek) {
             currentLeaderboardGameweek = gameweek;
             
@@ -1155,25 +1237,10 @@
             displayTransfers();
         }
 
-        function sortData(data, sortKey, direction) {
-            return data.sort((a, b) => {
-                let aVal = a[sortKey];
-                let bVal = b[sortKey];
-                
-                // Handle numeric values
-                if (typeof aVal === 'string' && !isNaN(parseFloat(aVal))) {
-                    aVal = parseFloat(aVal);
-                    bVal = parseFloat(bVal);
-                }
-                
-                if (direction === 'asc') {
-                    return aVal > bVal ? 1 : -1;
-                } else {
-                    return aVal < bVal ? 1 : -1;
-                }
-            });
-        }
-
+        // ============================================================================
+        // DATA DISPLAY FUNCTIONS
+        // ============================================================================
+        
         function displayLeaderboard() {
             if (!currentLeaderboardGameweek || !allData.leaderboards[currentLeaderboardGameweek]) {
                 return;
@@ -1182,7 +1249,7 @@
             const gameweekData = allData.leaderboards[currentLeaderboardGameweek];
             const searchTerm = document.getElementById('username-search').value.toLowerCase();
 
-            // Filter data based on mode
+            // Filter data based on search and player selection
             let filteredData = gameweekData.data.filter(entry => {
                 const matchesSearch = !searchTerm || entry.username.toLowerCase().includes(searchTerm);
                 
@@ -1190,32 +1257,19 @@
                     return matchesSearch;
                 }
 
+                const teamPlayers = [entry.tank, entry.dpsOne, entry.dpsTwo, entry.supportOne, entry.supportTwo];
+                
                 if (exactMatchMode) {
-                    // Exact match mode - ALL selected players must be in the team (AND operation)
-                    const teamPlayers = [
-                        entry.tank,
-                        entry.dpsOne,
-                        entry.dpsTwo,
-                        entry.supportOne,
-                        entry.supportTwo
-                    ];
-                    
-                    // Check if ALL selected players are in this team
+                    // Exact match mode - ALL selected players must be in the team
                     const hasAllSelectedPlayers = Array.from(selectedPlayers).every(player => 
                         teamPlayers.includes(player)
                     );
-                    
                     return matchesSearch && hasAllSelectedPlayers;
                 } else {
-                    // Regular mode - ANY selected player can be in the team (OR operation)
+                    // Regular mode - ANY selected player can be in the team
                     const hasAnySelectedPlayer = Array.from(selectedPlayers).some(player => 
-                        entry.tank === player || 
-                        entry.dpsOne === player || 
-                        entry.dpsTwo === player || 
-                        entry.supportOne === player || 
-                        entry.supportTwo === player
+                        teamPlayers.includes(player)
                     );
-                    
                     return matchesSearch && hasAnySelectedPlayer;
                 }
             });
@@ -1226,8 +1280,7 @@
             const filteredAveragePoints = filteredTeamCount > 0 ? (filteredTotalPoints / filteredTeamCount).toFixed(1) : 0;
 
             // Update stats
-            const statsContainer = document.getElementById('leaderboard-stats');
-            statsContainer.innerHTML = `
+            document.getElementById('leaderboard-stats').innerHTML = `
                 <div class="stat-card">
                     <h3>${filteredTeamCount}</h3>
                     <p>Teams Displayed</p>
@@ -1291,7 +1344,6 @@
             let filteredData = transferData.filter(player => {
                 const matchesSearch = !searchTerm || player.name.toLowerCase().includes(searchTerm);
                 const matchesRole = !roleFilter || player.role === roleFilter;
-                
                 return matchesSearch && matchesRole;
             });
 
@@ -1327,6 +1379,10 @@
             `).join('');
         }
 
+        // ============================================================================
+        // STYLING HELPERS
+        // ============================================================================
+        
         function getPositionChangeClass(change) {
             if (!change || change === 0) return 'position-same';
             
