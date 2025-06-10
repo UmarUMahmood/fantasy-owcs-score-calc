@@ -1,16 +1,36 @@
-# Fantasy OWCS Score Calculator - Web Application
+# Fantasy OWCS Dashboard
 
-This web application allows users to easily generate Fantasy OWCS score reports by simply pasting a FACEIT match URL. The application processes the match data and displays a formatted report directly in the browser, which can be easily copied to share on Discord or other platforms.
+A web app for Fantasy OWCS that provides match points calculation, leaderboard tracking and player transfer analysis. Users can generate match reports that contain the match stats with fantasy scores for each player and explore statistics from each week about the Fantasy OWCS leaderboard and Player Transfers.
 
 ## Features
 
-- Simple web interface for inputting FACEIT match URLs
-- Automatic processing of match data using the FACEIT API
-- Formatted display of match results and player scores
-- Copy to clipboard functionality for easy sharing
-- No installation required for end users
+### Match Calculator
 
-## Installation
+- Enter a FACEIT Match URL
+- Fetches match data using the FACEIT API
+- Generates ASCII tables showing player stats, fantasy points, map results and the match result
+
+### Leaderboards
+
+- View the Fantasy OWCS leaderboard for each individual Gameweek
+- Access additional information such as change in rank and which transfers are being made
+- Filter the leaderboards using a combination of players
+- Find out the average points for each gameweek and average points for filtered rosters
+
+### Player Transfers
+
+- Track which players are being transferred in/out (only after the deadline for that gameweek)
+- Filter by Role
+- Compare trends across different weeks
+
+## Local Development
+
+### Prerequisites
+
+- Python 3.8
+- FACEIT API key ([Get one here](https://developers.faceit.com/))
+
+### Setup
 
 1. **Clone the repository:**
 
@@ -29,7 +49,7 @@ This web application allows users to easily generate Fantasy OWCS score reports 
 3. **Install the required packages:**
 
     ```sh
-    pip install flask dotenv requests table2ascii
+    pip install -r requirements.txt
     ```
 
 4. **Create a `.env` file with your FACEIT API key:**
@@ -40,28 +60,33 @@ This web application allows users to easily generate Fantasy OWCS score reports 
 
     Replace `your-api-key-here` with your actual FACEIT API key from the [FACEIT Developer Portal](https://developers.faceit.com/).
 
-5. **Create the templates directory and add the HTML template:**
+5. **Run the application:**
 
-    ```sh
-    mkdir -p templates
-    # Copy the index.html file into this directory
-    ```
-
-## Running the Application Locally
-
-1. **Start the Flask app:**
-
-    ```sh
+    ```bash
     python app.py
     ```
 
-2. **Access the application:**
-   Open your browser and navigate to `http://127.0.0.1:5000`
+6. **Access the application:** Open your browser and navigate to `http://127.0.0.1:5000`
 
-## Deploy to Vercel
+## Deployment
 
-1. **Deploy with Vercel CLI:**
+### Deploy to Vercel
 
-    ```sh
-    vercel
+1. **Install Vercel CLI:**
+
+    ```bash
+    npm i -g vercel
     ```
+
+2. **Deploy:**
+
+    ```bash
+    vercel --prod
+    ```
+
+3. **Set environment variables:** In your Vercel dashboard, add your `API_KEY` environment variable.
+
+## Acknowledgements
+
+- [Fantasy OWCS](https://owfantasy.com/) for making the actual fantasy game this is entirely based on
+- [FACEIT](https://www.faceit.com/) for hosting the Overwatch Esports games and providing data through their API

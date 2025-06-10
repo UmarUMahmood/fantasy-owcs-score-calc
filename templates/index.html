@@ -3,9 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fantasy OWCS Score Calculator</title>
+    <title>Fantasy OWCS Dashboard</title>
     <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
+
+    <!-- Vercel Analytics -->
+    <script>
+        window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/insights/script.js"></script>
+
     <style>
+        /* ============================================================================
+           BASE STYLES
+           ============================================================================ */
+        
         html {
             color-scheme: dark;
         }
@@ -14,45 +25,125 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
             color: #ffffff;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
+            margin: 0;
+            padding: 0;
             background-color: #181a1b;
         }
-        
+
+        /* Color Variables */
+        :root {
+            --primary-orange: #ec8302;
+            --dark-bg: #131516;
+            --medium-bg: #2a2d30;
+            --light-bg: #3a3e41;
+            --text-primary: #ffffff;
+            --text-secondary: #ccc;
+            --text-muted: #6c757d;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --tank-color: #ff6b35;
+            --dps-color: #ff1744;
+            --support-color: #00e676;
+        }
+
+        /* ============================================================================
+           LAYOUT COMPONENTS
+           ============================================================================ */
+
+        .header {
+            background-color: var(--dark-bg);
+            padding: 20px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+        }
+
+        .header-content {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .main-content {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
         h1 {
-            color: #ec8302;
+            color: var(--primary-orange);
             text-align: center;
-            margin-bottom: 30px;
+            margin: 0 0 20px 0;
         }
-        
-        .container {
-            background-color: #131516;
+
+        /* ============================================================================
+           NAVIGATION
+           ============================================================================ */
+
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 0;
+        }
+
+        .nav-tab {
+            background-color: var(--light-bg);
+            color: var(--text-primary);
+            border: none;
+            padding: 12px 24px;
+            cursor: pointer;
+            border-radius: 8px 8px 0 0;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .nav-tab.active {
+            background-color: var(--primary-orange);
+            color: #000;
+        }
+
+        .nav-tab:hover:not(.active) {
+            background-color: #4a4e51;
+        }
+
+        /* ============================================================================
+           TAB CONTENT
+           ============================================================================ */
+
+        .tab-content {
+            display: none;
+            background-color: var(--dark-bg);
             padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(219, 218, 218, 0.1);
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
         }
-        
-        form {
-            margin-bottom: 30px;
+
+        .tab-content.active {
+            display: block;
         }
-        
+
+        /* ============================================================================
+           FORMS AND INPUTS
+           ============================================================================ */
+
         label {
             display: block;
             margin-bottom: 10px;
             font-weight: bold;
         }
-        
-        input[type="text"] {
+
+        input[type="text"], select {
             width: 100%;
             padding: 12px;
             margin-bottom: 20px;
-            border: 1px solid #3a3e41;
+            border: 1px solid var(--light-bg);
             border-radius: 4px;
             box-sizing: border-box;
             font-size: 16px;
+            background-color: var(--medium-bg);
+            color: var(--text-primary);
         }
-        
+
         button {
             background-color: #A35A00;
             color: white;
@@ -63,17 +154,26 @@
             font-size: 16px;
             transition: background-color 0.3s;
         }
-        
+
         button:hover {
-            background-color: rgb(243, 135, 2);
+            background-color: #f38702;
         }
-        
+
+        /* ============================================================================
+           MATCH CALCULATOR STYLES
+           ============================================================================ */
+
+        .match-links {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
         #loading {
             display: none;
             text-align: center;
             margin: 20px 0;
         }
-        
+
         #result {
             background-color: #181818;
             padding: 20px;
@@ -86,144 +186,1235 @@
             margin-bottom: 15px;
             text-align: center;
         }
-        
+
         .copy-btn {
             margin-top: 15px;
-            background-color: #6c757d;
+            background-color: var(--text-muted);
         }
-        
+
         .copy-btn:hover {
             background-color: #5a6268;
         }
-        
+
         .success-message {
-            color: green;
+            color: var(--success-color);
             margin-left: 10px;
             display: none;
         }
-        
-        .option-container {
-            margin-bottom: 20px;
-        }
-        
-        .checkbox-label {
-            display: inline;
-            font-weight: normal;
-            margin-left: 8px;
-        }
-        
-        .side-by-side-container {
+
+        /* ============================================================================
+           CONTROL PANELS
+           ============================================================================ */
+
+        .controls {
             display: flex;
-            flex-wrap: wrap;
+            flex-direction: column;
             gap: 20px;
             margin-bottom: 20px;
         }
-        
+
+        .controls-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        .controls > div, .controls-row > div {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .controls label, .controls-row label {
+            font-size: 14px;
+            margin-bottom: 0;
+            font-weight: normal;
+        }
+
+        .controls input, .controls select, .controls-row input, .controls-row select {
+            background-color: var(--medium-bg);
+            color: var(--text-primary);
+            border: 1px solid var(--light-bg);
+            border-radius: 4px;
+            padding: 8px 12px;
+            font-size: 14px;
+            margin-bottom: 0;
+        }
+
+        /* ============================================================================
+           PLAYER FILTER COMPONENT
+           ============================================================================ */
+
+        .player-filter-container {
+            min-width: 300px;
+            flex: 1;
+            max-width: 100%;
+        }
+
+        .player-filter-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            padding: 8px 0;
+            border-bottom: 2px solid var(--light-bg);
+            margin-bottom: 10px;
+        }
+
+        .player-filter-header:hover {
+            color: var(--primary-orange);
+        }
+
+        .filter-arrow {
+            transition: transform 0.3s ease;
+            font-size: 16px;
+            color: var(--primary-orange);
+        }
+
+        .filter-arrow.expanded {
+            transform: rotate(180deg);
+        }
+
+        .selected-count {
+            background-color: var(--primary-orange);
+            color: #000;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: auto;
+        }
+
+        .player-filter-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .player-filter-content.expanded {
+            max-height: 600px;
+        }
+
+        .filter-controls {
+            margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .reset-filter-btn {
+            background-color: var(--text-muted);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .reset-filter-btn:hover {
+            background-color: #5a6268;
+        }
+
+        .exact-match-container {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background-color: rgba(236, 131, 2, 0.1);
+            padding: 6px 10px;
+            border-radius: 4px;
+            border: 1px solid rgba(236, 131, 2, 0.3);
+        }
+
+        .exact-match-container input[type="checkbox"] {
+            margin: 0;
+            width: 16px;
+            height: 16px;
+        }
+
+        .exact-match-container label {
+            margin: 0;
+            font-size: 12px;
+            cursor: pointer;
+            color: var(--primary-orange);
+            font-weight: bold;
+        }
+
+        /* ============================================================================
+           ROLE SECTIONS
+           ============================================================================ */
+
+        .role-section {
+            margin-bottom: 20px;
+        }
+
+        .role-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid var(--light-bg);
+        }
+
+        .role-title.tank { color: var(--tank-color); }
+        .role-title.damage { color: var(--dps-color); }
+        .role-title.support { color: var(--support-color); }
+
+        .players-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .player-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .player-checkbox input[type="checkbox"] {
+            margin: 0;
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .player-checkbox label {
+            cursor: pointer;
+            margin-bottom: 0;
+            font-size: 14px;
+            user-select: none;
+        }
+
+        /* ============================================================================
+           GAMEWEEK TABS
+           ============================================================================ */
+
+        .gameweek-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--light-bg);
+            padding-bottom: 10px;
+        }
+
+        .gameweek-tab {
+            background-color: var(--light-bg);
+            color: var(--text-primary);
+            border: none;
+            padding: 8px 16px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .gameweek-tab.active {
+            background-color: var(--primary-orange);
+            color: #000;
+        }
+
+        .gameweek-tab:hover:not(.active) {
+            background-color: #4a4e51;
+        }
+
+        /* ============================================================================
+           STATISTICS DISPLAY
+           ============================================================================ */
+
+        .stats-summary {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            background-color: var(--medium-bg);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            min-width: 120px;
+            flex: 1;
+        }
+
+        .stat-card h3 {
+            margin: 0 0 5px 0;
+            color: var(--primary-orange);
+            font-size: 24px;
+        }
+
+        .stat-card p {
+            margin: 0;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        /* ============================================================================
+           TABLES
+           ============================================================================ */
+
+        .table-container {
+            overflow-x: auto;
+            background-color: var(--medium-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            width: 100%;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1000px;
+        }
+
+        th, td {
+            padding: 12px 8px;
+            text-align: left;
+            border-bottom: 1px solid var(--light-bg);
+            word-wrap: break-word;
+            position: relative;
+        }
+
+        th {
+            background-color: var(--light-bg);
+            color: var(--primary-orange);
+            font-weight: bold;
+            cursor: pointer;
+            user-select: none;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding-right: 28px;
+        }
+
+        th:hover {
+            background-color: #4a4e51;
+        }
+
+        th.sortable::after {
+            content: '↕';
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0.5;
+            font-size: 14px;
+            width: 12px;
+            text-align: center;
+        }
+
+        th.sort-asc::after {
+            content: '↑';
+            opacity: 1;
+            color: var(--primary-orange);
+        }
+
+        th.sort-desc::after {
+            content: '↓';
+            opacity: 1;
+            color: var(--primary-orange);
+        }
+
+        tr:nth-child(even) {
+            background-color: #1e2021;
+        }
+
+        tr:hover {
+            background-color: var(--medium-bg);
+        }
+
+        /* ============================================================================
+           POSITION CHANGES AND TRANSFERS
+           ============================================================================ */
+
+        .position-change {
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+
+        .position-up {
+            color: var(--success-color);
+            background-color: rgba(40, 167, 69, 0.1);
+        }
+
+        .position-down {
+            color: var(--danger-color);
+            background-color: rgba(220, 53, 69, 0.1);
+        }
+
+        .position-same {
+            color: var(--text-muted);
+        }
+
+        .transfer-list {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .transfer-in {
+            color: var(--success-color);
+        }
+
+        .transfer-out {
+            color: var(--danger-color);
+        }
+
+        /* Position change intensity colors */
+        .change-huge-up { background-color: rgba(40, 167, 69, 0.3) !important; }
+        .change-big-up { background-color: rgba(40, 167, 69, 0.2) !important; }
+        .change-small-up { background-color: rgba(40, 167, 69, 0.1) !important; }
+        .change-huge-down { background-color: rgba(220, 53, 69, 0.3) !important; }
+        .change-big-down { background-color: rgba(220, 53, 69, 0.2) !important; }
+        .change-small-down { background-color: rgba(220, 53, 69, 0.1) !important; }
+
+        /* ============================================================================
+           ROLE COLORS
+           ============================================================================ */
+
+        .role-tank { color: var(--tank-color); font-weight: bold; }
+        .role-dps { color: var(--dps-color); font-weight: bold; }
+        .role-support { color: var(--support-color); font-weight: bold; }
+
+        /* ============================================================================
+           UTILITY CLASSES
+           ============================================================================ */
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--primary-orange);
+        }
+
         footer {
             margin-top: 40px;
             text-align: center;
             color: #777;
             font-size: 14px;
+            padding: 20px;
         }
 
         a { 
             color: #3391ff;
         }
+
+        /* ============================================================================
+           RESPONSIVE DESIGN
+           ============================================================================ */
+
+        @media (max-width: 1200px) {
+            th, td {
+                font-size: 12px;
+                padding: 8px 4px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content, .header-content {
+                padding: 0 10px;
+            }
+
+            .nav-tabs {
+                flex-direction: column;
+            }
+
+            .controls-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .player-filter-container {
+                min-width: 100%;
+                max-width: 100%;
+            }
+
+            .stats-summary {
+                justify-content: center;
+            }
+
+            th, td {
+                font-size: 11px;
+                padding: 6px 2px;
+            }
+
+            .players-list {
+                gap: 10px;
+            }
+
+            .player-checkbox {
+                font-size: 13px;
+            }
+
+            .filter-controls {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Fantasy OWCS Score Calculator</h1>
-
-        <div class="match-links" style="margin-bottom: 20px; text-align: center;">
-            Get a match link from FACEIT here (<a href="https://www.faceit.com/en/home">sign-in on FACEIT</a> if it doesn't work):
-            <a href="https://www.faceit.com/en/ow2/league/FACEIT%20League/88c7f7ec-4cb8-44d3-a5db-6e808639c232/19cfb5d9-6a70-45cc-904f-2e8ef6f80a4b/matches?region=65b085e4-7e28-49f3-a6c1-9e12faaa343b&division=47812350-e0c6-48fd-8ff9-19d184236957&stage=ccea29fe-582e-4619-8afa-858bacc89a4f&conference=6306d719-8c2d-471c-bc42-421ada64911b" target="_blank">FACEIT EMEA Matches</a> | 
-            <a href="https://www.faceit.com/en/ow2/league/FACEIT%20League/88c7f7ec-4cb8-44d3-a5db-6e808639c232/19cfb5d9-6a70-45cc-904f-2e8ef6f80a4b/matches?region=e80b15e5-92eb-4500-8814-2353162a4727&division=d9e85be4-5622-430f-9f3f-f2f39485d28b&stage=ad5d41df-d838-4358-9cb0-dc464b79624e&conference=83cf0d5b-329b-4ac7-80c0-282238c336e3" target="_blank">FACEIT NA Matches</a>
+    <!-- ============================================================================
+         HEADER
+         ============================================================================ -->
+    <div class="header">
+        <div class="header-content">
+            <h1>Fantasy OWCS Dashboard</h1>
+            <div class="nav-tabs">
+                <button class="nav-tab active" onclick="switchMainTab('match-calculator')">Match Calculator</button>
+                <button class="nav-tab" onclick="switchMainTab('leaderboards')">Leaderboards</button>
+                <button class="nav-tab" onclick="switchMainTab('transfers')">Player Transfers</button>
+            </div>
         </div>
+    </div>
 
-        <form id="matchForm">
-            <label for="matchUrl">Paste FACEIT Match URL:</label>
-            <input type="text" id="matchUrl" name="match_url" placeholder="https://www.faceit.com/en/ow2/room/1-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" required>
+    <!-- ============================================================================
+         MAIN CONTENT
+         ============================================================================ -->
+    <div class="main-content">
+        <!-- Match Calculator Tab -->
+        <div id="match-calculator" class="tab-content active">
+            <div class="match-links">
+                <p><strong>Get a match link from FACEIT here</strong> (<a href="https://www.faceit.com/en/home">sign-in on FACEIT</a> if it doesn't work):</p>
+                <a href="https://www.faceit.com/en/ow2/league/FACEIT%20League/88c7f7ec-4cb8-44d3-a5db-6e808639c232/19cfb5d9-6a70-45cc-904f-2e8ef6f80a4b/matches?region=65b085e4-7e28-49f3-a6c1-9e12faaa343b&division=47812350-e0c6-48fd-8ff9-19d184236957&stage=ccea29fe-582e-4619-8afa-858bacc89a4f&conference=6306d719-8c2d-471c-bc42-421ada64911b" target="_blank">FACEIT EMEA Matches</a> | 
+                <a href="https://www.faceit.com/en/ow2/league/FACEIT%20League/88c7f7ec-4cb8-44d3-a5db-6e808639c232/19cfb5d9-6a70-45cc-904f-2e8ef6f80a4b/matches?region=e80b15e5-92eb-4500-8814-2353162a4727&division=d9e85be4-5622-430f-9f3f-f2f39485d28b&stage=ad5d41df-d838-4358-9cb0-dc464b79624e&conference=83cf0d5b-329b-4ac7-80c0-282238c336e3" target="_blank">FACEIT NA Matches</a>
+            </div>
+
+            <form id="matchForm">
+                <label for="matchUrl">Paste FACEIT Match URL or Match ID:</label>
+                <input type="text" id="matchUrl" name="match_url" 
+                    placeholder="https://www.faceit.com/en/ow2/room/1-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx or just 1-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" 
+                    required>
+                <button type="submit">Generate Report</button>
+            </form>
             
-            <div class="option-container">
-                <input type="checkbox" id="sideBySide" name="side_by_side">
-                <label for="sideBySide" class="checkbox-label">Display team tables side by side</label>
+            <div id="loading">
+                <p>Processing match data... This may take a few moments.</p>
             </div>
             
-            <button type="submit">Generate Report</button>
-        </form>
-        
-        <div id="loading">
-            <p>Processing match data... This may take a few moments.</p>
+            <div id="result-container" style="display: none;">
+                <div id="result"></div>
+                <div style="text-align: right;">
+                    <button id="copyBtn" class="copy-btn">Copy to Clipboard</button>
+                    <span id="copySuccess" class="success-message">Copied!</span>
+                </div>
+            </div>
         </div>
-        
-        <div id="result-container" style="display: none;">
-            <div id="result"></div>
-            <div style="text-align: right;">
-                <button id="copyBtn" class="copy-btn">Copy to Clipboard</button>
-                <span id="copySuccess" class="success-message">Copied!</span>
+
+        <!-- Leaderboards Tab -->
+        <div id="leaderboards" class="tab-content">
+            <div class="loading" id="leaderboard-loading">Loading leaderboard data...</div>
+            
+            <div id="leaderboard-content" style="display: none;">
+                <div class="controls">
+                    <div class="controls-row">
+                        <div>
+                            <label>Search Username:</label>
+                            <input type="text" id="username-search" placeholder="Enter username...">
+                        </div>
+                    </div>
+                    <div class="player-filter-container">
+                        <div class="player-filter-header" onclick="togglePlayerFilter()">
+                            <label style="margin: 0; cursor: pointer;">Filter by Players</label>
+                            <span class="filter-arrow" id="filter-arrow">▼</span>
+                            <span class="selected-count" id="selected-count" style="display: none;">0</span>
+                        </div>
+                        <div class="player-filter-content" id="player-filter-content">
+                            <div class="filter-controls">
+                                <button type="button" class="reset-filter-btn" onclick="resetPlayerFilter()">Reset Filter</button>
+                                <div class="exact-match-container">
+                                    <input type="checkbox" id="exact-match-checkbox" onchange="handleExactMatchChange()">
+                                    <label for="exact-match-checkbox">Exact Combination Match</label>
+                                </div>
+                            </div>
+                            <div id="player-filter-roles"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gameweek-tabs" id="leaderboard-tabs"></div>
+                <div class="stats-summary" id="leaderboard-stats"></div>
+
+                <div class="table-container">
+                    <table id="leaderboard-table">
+                        <thead>
+                            <tr>
+                                <th class="sortable" data-sort="weekly_position" title="Weekly Rank">Weekly Rank</th>
+                                <th class="sortable" data-sort="username" title="Username">Username</th>
+                                <th class="sortable" data-sort="weekly_points" title="Weekly Points">Weekly Pts</th>
+                                <th class="sortable" data-sort="current_overall_position" title="Overall Rank">Overall Rank</th>
+                                <th class="sortable" data-sort="overall_position_change" title="Overall Position Change">Change</th>
+                                <th class="sortable" data-sort="current_total_score" title="Total Score">Total Score</th>
+                                <th data-sort="tank" title="Tank Player">Tank</th>
+                                <th data-sort="dpsOne" title="DPS Player 1">DPS 1</th>
+                                <th data-sort="dpsTwo" title="DPS Player 2">DPS 2</th>
+                                <th data-sort="supportOne" title="Support Player 1">Supp 1</th>
+                                <th data-sort="supportTwo" title="Support Player 2">Supp 2</th>
+                                <th title="Players Transferred In">Transfers In</th>
+                                <th title="Players Transferred Out">Transfers Out</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboard-tbody"></tbody>
+                    </table>
+                </div>
+
+                <div class="no-data" id="leaderboard-no-data" style="display: none;">
+                    No data available for the selected filters.
+                </div>
+            </div>
+        </div>
+
+        <!-- Transfers Tab -->
+        <div id="transfers" class="tab-content">
+            <div class="loading" id="transfers-loading">Loading transfer data...</div>
+            
+            <div id="transfers-content" style="display: none;">
+                <div class="controls">
+                    <div class="controls-row">
+                        <div>
+                            <label>Search Player:</label>
+                            <input type="text" id="player-search" placeholder="Enter player name...">
+                        </div>
+                        <div>
+                            <label>Filter by Role:</label>
+                            <select id="role-filter">
+                                <option value="">All Roles</option>
+                                <option value="tank">Tank</option>
+                                <option value="dps">DPS</option>
+                                <option value="support">Support</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gameweek-tabs" id="transfers-tabs"></div>
+
+                <div class="table-container">
+                    <table id="transfers-table">
+                        <thead>
+                            <tr>
+                                <th class="sortable" data-sort="name" title="Player Name">Player</th>
+                                <th class="sortable" data-sort="role" title="Player Role">Role</th>
+                                <th class="sortable" data-sort="count" title="Number of Teams">Teams</th>
+                                <th class="sortable" data-sort="percentage" title="Percentage of Teams">%</th>
+                                <th class="sortable" data-sort="transferred_in" title="Number Transferred In">Trans In</th>
+                                <th class="sortable" data-sort="transfer_in_pct" title="Transfer In Percentage">Trans In %</th>
+                                <th class="sortable" data-sort="transferred_out" title="Number Transferred Out">Trans Out</th>
+                                <th class="sortable" data-sort="transfer_out_pct" title="Transfer Out Percentage">Trans Out %</th>
+                                <th class="sortable" data-sort="net_transfers" title="Net Transfers (In - Out)">Net Trans</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transfers-tbody"></tbody>
+                    </table>
+                </div>
+
+                <div class="no-data" id="transfers-no-data" style="display: none;">
+                    No data available for the selected filters.
+                </div>
             </div>
         </div>
     </div>
     
+    <!-- ============================================================================
+         FOOTER
+         ============================================================================ -->
     <footer>
-        <p>Fantasy OWCS Score Calculator | Made by Umarrii | <a href="https://owfantasy.com/" target="_blank">Visit Fantasy OWCS</a></p>
+        <p>Fantasy OWCS Dashboard | Made by Umarrii | <a href="https://owfantasy.com/" target="_blank">Visit Fantasy OWCS</a></p>
     </footer>
     
     <script>
-        document.getElementById('matchForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const matchUrl = document.getElementById('matchUrl').value;
-            const sideBySide = document.getElementById('sideBySide').checked;
+        // ============================================================================
+        // GLOBAL VARIABLES
+        // ============================================================================
+        
+        let allData = null;
+        let currentLeaderboardGameweek = null;
+        let currentTransfersGameweek = null;
+        let currentSortColumn = null;
+        let currentSortDirection = 'desc';
+        let selectedPlayers = new Set();
+        let exactMatchMode = false;
+
+        // ============================================================================
+        // INITIALIZATION
+        // ============================================================================
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+            setupMatchCalculator();
+        });
+
+        async function loadData() {
+            try {
+                console.log('Fetching leaderboard data...');
+                const response = await fetch('/api/leaderboard-data');
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('API Error Response:', errorText);
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+                
+                const data = await response.json();
+                console.log('Received data:', data);
+                
+                if (data.error) {
+                    console.error('API returned error:', data);
+                    throw new Error(data.error);
+                }
+                
+                allData = data;
+                setupLeaderboards();
+                setupTransfers();
+            } catch (error) {
+                console.error('Error loading data:', error);
+                
+                // Show error message to user
+                const loadingEls = document.querySelectorAll('.loading');
+                loadingEls.forEach(el => {
+                    el.textContent = `Error loading data: ${error.message}`;
+                    el.style.color = '#ff6b6b';
+                });
+            }
+        }
+
+        // ============================================================================
+        // MATCH CALCULATOR
+        // ============================================================================
+        
+        function setupMatchCalculator() {
+            const form = document.getElementById('matchForm');
             const loadingDiv = document.getElementById('loading');
             const resultContainer = document.getElementById('result-container');
             const resultDiv = document.getElementById('result');
             
-            // Show loading message
-            loadingDiv.style.display = 'block';
-            resultContainer.style.display = 'none';
-            resultDiv.textContent = '';
-            
-            // Send request to server
-            fetch('/process', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: new URLSearchParams({
-                    'match_url': matchUrl,
-                    'side_by_side': sideBySide
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                loadingDiv.style.display = 'none';
-                resultContainer.style.display = 'block';
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
                 
-                if (data.error) {
-                    resultDiv.textContent = 'Error: ' + data.error;
-                } else {
-                    resultDiv.textContent = data.report;
+                const formData = new FormData(this);
+                formData.set('side_by_side', 'true'); // Always use side by side
+                
+                loadingDiv.style.display = 'block';
+                resultContainer.style.display = 'none';
+                
+                try {
+                    const response = await fetch('/process', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.error) {
+                        resultDiv.textContent = `Error: ${data.error}`;
+                    } else {
+                        resultDiv.textContent = data.report;
+                    }
+                    
+                    loadingDiv.style.display = 'none';
+                    resultContainer.style.display = 'block';
+                } catch (error) {
+                    loadingDiv.style.display = 'none';
+                    resultDiv.textContent = `Error: ${error.message}`;
+                    resultContainer.style.display = 'block';
                 }
-            })
-            .catch(error => {
-                loadingDiv.style.display = 'none';
-                resultContainer.style.display = 'block';
-                resultDiv.textContent = 'Error processing request: ' + error;
             });
-        });
+
+            document.getElementById('copyBtn').addEventListener('click', function() {
+                const resultText = document.getElementById('result').textContent;
+                navigator.clipboard.writeText(resultText).then(function() {
+                    const successMsg = document.getElementById('copySuccess');
+                    successMsg.style.display = 'inline';
+                    setTimeout(() => successMsg.style.display = 'none', 2000);
+                });
+            });
+        }
+
+        // ============================================================================
+        // NAVIGATION
+        // ============================================================================
         
-        document.getElementById('copyBtn').addEventListener('click', function() {
-            const resultText = document.getElementById('result').textContent;
-            navigator.clipboard.writeText(resultText).then(function() {
-                const successMsg = document.getElementById('copySuccess');
-                successMsg.style.display = 'inline';
-                setTimeout(function() {
-                    successMsg.style.display = 'none';
-                }, 2000);
+        function switchMainTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
             });
-        });
+            
+            // Remove active class from all nav tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab and mark nav as active
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // ============================================================================
+        // LEADERBOARD SETUP
+        // ============================================================================
+        
+        function setupLeaderboards() {
+            const loadingEl = document.getElementById('leaderboard-loading');
+            const contentEl = document.getElementById('leaderboard-content');
+            
+            if (!allData.leaderboards || Object.keys(allData.leaderboards).length === 0) {
+                loadingEl.textContent = 'No leaderboard data available';
+                return;
+            }
+
+            loadingEl.style.display = 'none';
+            contentEl.style.display = 'block';
+
+            // Setup tabs
+            const tabsContainer = document.getElementById('leaderboard-tabs');
+            const gameweeks = Object.keys(allData.leaderboards).sort(sortGameweeks);
+
+            gameweeks.forEach((gameweek, index) => {
+                const tab = document.createElement('button');
+                tab.className = 'gameweek-tab';
+                tab.textContent = formatGameweekName(gameweek);
+                tab.onclick = () => switchLeaderboardGameweek(gameweek);
+                
+                if (index === gameweeks.length - 1) {
+                    tab.classList.add('active');
+                    currentLeaderboardGameweek = gameweek;
+                }
+                tabsContainer.appendChild(tab);
+            });
+
+            // Setup components
+            setupPlayerFilterLayout();
+            setupTableSorting('leaderboard-table');
+            displayLeaderboard();
+            
+            // Setup event listeners
+            document.getElementById('username-search').addEventListener('input', displayLeaderboard);
+        }
+
+        function setupTransfers() {
+            const loadingEl = document.getElementById('transfers-loading');
+            const contentEl = document.getElementById('transfers-content');
+            
+            if (!allData.transfers || Object.keys(allData.transfers).length === 0) {
+                loadingEl.textContent = 'No transfer data available';
+                return;
+            }
+
+            loadingEl.style.display = 'none';
+            contentEl.style.display = 'block';
+
+            // Setup tabs
+            const tabsContainer = document.getElementById('transfers-tabs');
+            const gameweeks = Object.keys(allData.transfers).sort(sortGameweeks);
+
+            gameweeks.forEach((gameweek, index) => {
+                const tab = document.createElement('button');
+                tab.className = 'gameweek-tab';
+                tab.textContent = formatGameweekName(gameweek);
+                tab.onclick = () => switchTransfersGameweek(gameweek);
+                
+                if (index === gameweeks.length - 1) {
+                    tab.classList.add('active');
+                    currentTransfersGameweek = gameweek;
+                }
+                tabsContainer.appendChild(tab);
+            });
+
+            // Setup components
+            setupTableSorting('transfers-table');
+            displayTransfers();
+            
+            // Setup event listeners
+            document.getElementById('player-search').addEventListener('input', displayTransfers);
+            document.getElementById('role-filter').addEventListener('change', displayTransfers);
+        }
+
+        // ============================================================================
+        // UTILITY FUNCTIONS
+        // ============================================================================
+        
+        function sortGameweeks(a, b) {
+            const aNum = parseInt(a.replace(/\D/g, ''));
+            const bNum = parseInt(b.replace(/\D/g, ''));
+            if (a.includes('playoff') && !b.includes('playoff')) return 1;
+            if (!a.includes('playoff') && b.includes('playoff')) return -1;
+            return aNum - bNum;
+        }
+
+        function formatGameweekName(gameweek) {
+            if (gameweek.startsWith('playoff')) {
+                return gameweek.replace('playoff', 'Playoff ');
+            }
+            return gameweek.toUpperCase();
+        }
+
+        function setupTableSorting(tableId) {
+            const table = document.getElementById(tableId);
+            const headers = table.querySelectorAll('th.sortable');
+            
+            headers.forEach(header => {
+                header.addEventListener('click', function() {
+                    const sortKey = this.getAttribute('data-sort');
+                    
+                    // Toggle sort direction if clicking the same column
+                    if (currentSortColumn === sortKey) {
+                        currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
+                    } else {
+                        currentSortColumn = sortKey;
+                        currentSortDirection = 'desc';
+                    }
+                    
+                    // Update header classes
+                    headers.forEach(h => h.classList.remove('sort-asc', 'sort-desc'));
+                    this.classList.add(currentSortDirection === 'asc' ? 'sort-asc' : 'sort-desc');
+                    
+                    // Re-display data with new sorting
+                    if (tableId === 'leaderboard-table') {
+                        displayLeaderboard();
+                    } else {
+                        displayTransfers();
+                    }
+                });
+            });
+        }
+
+        function sortData(data, sortKey, direction) {
+            return data.sort((a, b) => {
+                let aVal = a[sortKey];
+                let bVal = b[sortKey];
+                
+                // Handle numeric values
+                if (typeof aVal === 'string' && !isNaN(parseFloat(aVal))) {
+                    aVal = parseFloat(aVal);
+                    bVal = parseFloat(bVal);
+                }
+                
+                return direction === 'asc' ? (aVal > bVal ? 1 : -1) : (aVal < bVal ? 1 : -1);
+            });
+        }
+
+        // ============================================================================
+        // PLAYER FILTER
+        // ============================================================================
+        
+        function setupPlayerFilterLayout() {
+            const rolesContainer = document.getElementById('player-filter-roles');
+            
+            // Get all unique players organized by role
+            const playersByRole = {
+                tank: new Set(),
+                dps: new Set(),
+                support: new Set()
+            };
+            
+            Object.values(allData.leaderboards).forEach(gw => {
+                gw.data.forEach(entry => {
+                    if (entry.tank) playersByRole.tank.add(entry.tank);
+                    if (entry.dpsOne) playersByRole.dps.add(entry.dpsOne);
+                    if (entry.dpsTwo) playersByRole.dps.add(entry.dpsTwo);
+                    if (entry.supportOne) playersByRole.support.add(entry.supportOne);
+                    if (entry.supportTwo) playersByRole.support.add(entry.supportTwo);
+                });
+            });
+
+            // Build the roles HTML
+            const roleConfigs = [
+                { key: 'tank', title: 'Tank', class: 'tank' },
+                { key: 'dps', title: 'Damage', class: 'damage' },
+                { key: 'support', title: 'Support', class: 'support' }
+            ];
+
+            let rolesHTML = '';
+            roleConfigs.forEach(config => {
+                if (playersByRole[config.key].size > 0) {
+                    rolesHTML += `<div class="role-section">`;
+                    rolesHTML += `<div class="role-title ${config.class}">${config.title}</div>`;
+                    rolesHTML += `<div class="players-list">`;
+                    
+                    Array.from(playersByRole[config.key])
+                        .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
+                        .forEach(player => {
+                            rolesHTML += `
+                                <div class="player-checkbox">
+                                    <input type="checkbox" id="player-${player}" value="${player}" onchange="handlePlayerCheckbox('${player}')">
+                                    <label for="player-${player}">${player}</label>
+                                </div>
+                            `;
+                        });
+                    
+                    rolesHTML += `</div></div>`;
+                }
+            });
+            
+            rolesContainer.innerHTML = rolesHTML;
+        }
+
+        function togglePlayerFilter() {
+            const content = document.getElementById('player-filter-content');
+            const arrow = document.getElementById('filter-arrow');
+            
+            const isExpanded = content.classList.contains('expanded');
+            if (isExpanded) {
+                content.classList.remove('expanded');
+                arrow.classList.remove('expanded');
+            } else {
+                content.classList.add('expanded');
+                arrow.classList.add('expanded');
+            }
+        }
+
+        function handlePlayerCheckbox(player) {
+            if (selectedPlayers.has(player)) {
+                selectedPlayers.delete(player);
+            } else {
+                selectedPlayers.add(player);
+            }
+            updateSelectedCount();
+            displayLeaderboard();
+        }
+
+        function handleExactMatchChange() {
+            exactMatchMode = document.getElementById('exact-match-checkbox').checked;
+            displayLeaderboard();
+        }
+
+        function resetPlayerFilter() {
+            selectedPlayers.clear();
+            exactMatchMode = false;
+            
+            // Uncheck all checkboxes
+            document.querySelectorAll('#player-filter-roles input[type="checkbox"]').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            
+            document.getElementById('exact-match-checkbox').checked = false;
+            updateSelectedCount();
+            displayLeaderboard();
+        }
+
+        function updateSelectedCount() {
+            const countEl = document.getElementById('selected-count');
+            
+            if (selectedPlayers.size === 0) {
+                countEl.style.display = 'none';
+            } else {
+                countEl.textContent = selectedPlayers.size;
+                countEl.style.display = 'inline';
+            }
+        }
+
+        // ============================================================================
+        // GAMEWEEK SWITCHING
+        // ============================================================================
+        
+        function switchLeaderboardGameweek(gameweek) {
+            currentLeaderboardGameweek = gameweek;
+            
+            // Update active tab
+            document.querySelectorAll('#leaderboard-tabs .gameweek-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            displayLeaderboard();
+        }
+
+        function switchTransfersGameweek(gameweek) {
+            currentTransfersGameweek = gameweek;
+            
+            // Update active tab
+            document.querySelectorAll('#transfers-tabs .gameweek-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            displayTransfers();
+        }
+
+        // ============================================================================
+        // DATA DISPLAY FUNCTIONS
+        // ============================================================================
+        
+        function displayLeaderboard() {
+            if (!currentLeaderboardGameweek || !allData.leaderboards[currentLeaderboardGameweek]) {
+                return;
+            }
+
+            const gameweekData = allData.leaderboards[currentLeaderboardGameweek];
+            const searchTerm = document.getElementById('username-search').value.toLowerCase();
+
+            // Filter data based on search and player selection
+            let filteredData = gameweekData.data.filter(entry => {
+                const matchesSearch = !searchTerm || entry.username.toLowerCase().includes(searchTerm);
+                
+                if (selectedPlayers.size === 0) {
+                    return matchesSearch;
+                }
+
+                const teamPlayers = [entry.tank, entry.dpsOne, entry.dpsTwo, entry.supportOne, entry.supportTwo];
+                
+                if (exactMatchMode) {
+                    // Exact match mode - ALL selected players must be in the team
+                    const hasAllSelectedPlayers = Array.from(selectedPlayers).every(player => 
+                        teamPlayers.includes(player)
+                    );
+                    return matchesSearch && hasAllSelectedPlayers;
+                } else {
+                    // Regular mode - ANY selected player can be in the team
+                    const hasAnySelectedPlayer = Array.from(selectedPlayers).some(player => 
+                        teamPlayers.includes(player)
+                    );
+                    return matchesSearch && hasAnySelectedPlayer;
+                }
+            });
+
+            // Calculate filtered stats
+            const filteredTeamCount = filteredData.length;
+            const filteredTotalPoints = filteredData.reduce((sum, entry) => sum + entry.weekly_points, 0);
+            const filteredAveragePoints = filteredTeamCount > 0 ? (filteredTotalPoints / filteredTeamCount).toFixed(1) : 0;
+
+            // Update stats
+            document.getElementById('leaderboard-stats').innerHTML = `
+                <div class="stat-card">
+                    <h3>${filteredTeamCount}</h3>
+                    <p>Teams Displayed</p>
+                </div>
+                <div class="stat-card">
+                    <h3>${gameweekData.total_participants}</h3>
+                    <p>Total Participants</p>
+                </div>
+                <div class="stat-card">
+                    <h3>${filteredAveragePoints}</h3>
+                    <p>Average Points (Filtered)</p>
+                </div>
+            `;
+
+            // Sort data if needed
+            if (currentSortColumn) {
+                filteredData = sortData(filteredData, currentSortColumn, currentSortDirection);
+            }
+
+            const tbody = document.getElementById('leaderboard-tbody');
+            const noDataEl = document.getElementById('leaderboard-no-data');
+
+            if (filteredData.length === 0) {
+                tbody.innerHTML = '';
+                noDataEl.style.display = 'block';
+                return;
+            }
+
+            noDataEl.style.display = 'none';
+            tbody.innerHTML = filteredData.map(entry => `
+                <tr>
+                    <td>${entry.weekly_position}</td>
+                    <td><strong>${entry.username}</strong></td>
+                    <td>${entry.weekly_points}</td>
+                    <td>${entry.current_overall_position}</td>
+                    <td class="position-change ${getPositionChangeClass(entry.overall_position_change)}">
+                        ${entry.overall_position_change || 0}
+                    </td>
+                    <td>${entry.current_total_score}</td>
+                    <td><span class="role-tank">${entry.tank || '-'}</span></td>
+                    <td><span class="role-dps">${entry.dpsOne || '-'}</span></td>
+                    <td><span class="role-dps">${entry.dpsTwo || '-'}</span></td>
+                    <td><span class="role-support">${entry.supportOne || '-'}</span></td>
+                    <td><span class="role-support">${entry.supportTwo || '-'}</span></td>
+                    <td class="transfer-in">${entry.transferred_in && entry.transferred_in.length > 0 ? entry.transferred_in.join(', ') : '-'}</td>
+                    <td class="transfer-out">${entry.transferred_out && entry.transferred_out.length > 0 ? entry.transferred_out.join(', ') : '-'}</td>
+                </tr>
+            `).join('');
+        }
+
+        function displayTransfers() {
+            if (!currentTransfersGameweek || !allData.transfers[currentTransfersGameweek]) {
+                return;
+            }
+
+            const transferData = allData.transfers[currentTransfersGameweek];
+            const searchTerm = document.getElementById('player-search').value.toLowerCase();
+            const roleFilter = document.getElementById('role-filter').value;
+
+            // Filter data
+            let filteredData = transferData.filter(player => {
+                const matchesSearch = !searchTerm || player.name.toLowerCase().includes(searchTerm);
+                const matchesRole = !roleFilter || player.role === roleFilter;
+                return matchesSearch && matchesRole;
+            });
+
+            // Sort data if needed
+            if (currentSortColumn) {
+                filteredData = sortData(filteredData, currentSortColumn, currentSortDirection);
+            }
+
+            const tbody = document.getElementById('transfers-tbody');
+            const noDataEl = document.getElementById('transfers-no-data');
+
+            if (filteredData.length === 0) {
+                tbody.innerHTML = '';
+                noDataEl.style.display = 'block';
+                return;
+            }
+
+            noDataEl.style.display = 'none';
+            tbody.innerHTML = filteredData.map(player => `
+                <tr>
+                    <td><strong>${player.name}</strong></td>
+                    <td><span class="role-${player.role}">${player.role.toUpperCase()}</span></td>
+                    <td>${player.count}</td>
+                    <td>${player.percentage}%</td>
+                    <td class="transfer-in">${player.transferred_in || 0}</td>
+                    <td class="transfer-in">${player.transfer_in_pct || 0}%</td>
+                    <td class="transfer-out">${player.transferred_out || 0}</td>
+                    <td class="transfer-out">${player.transfer_out_pct || 0}%</td>
+                    <td class="position-change ${getNetTransferClass(player.net_transfers || 0)}">
+                        ${player.net_transfers || 0}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // ============================================================================
+        // STYLING HELPERS
+        // ============================================================================
+        
+        function getPositionChangeClass(change) {
+            if (!change || change === 0) return 'position-same';
+            
+            const absChange = Math.abs(change);
+            let baseClass = change > 0 ? 'position-up' : 'position-down';
+            
+            // Add intensity classes based on magnitude
+            if (absChange >= 20) {
+                baseClass += ' change-huge-' + (change > 0 ? 'up' : 'down');
+            } else if (absChange >= 10) {
+                baseClass += ' change-big-' + (change > 0 ? 'up' : 'down');
+            } else if (absChange >= 5) {
+                baseClass += ' change-small-' + (change > 0 ? 'up' : 'down');
+            }
+            
+            return baseClass;
+        }
+
+        function getNetTransferClass(netTransfers) {
+            if (netTransfers > 0) return 'position-up';
+            if (netTransfers < 0) return 'position-down';
+            return 'position-same';
+        }
     </script>
 </body>
 </html>
