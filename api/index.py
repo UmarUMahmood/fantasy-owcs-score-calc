@@ -325,204 +325,358 @@ def load_json_files(directory: str) -> Dict[str, List[Dict]]:
                 file_path = os.path.join(directory, filename)
                 try:
                     with open(file_path, 'r') as file:
-                        gameweek_data[filename] = json.load(file)
-                except json.JSONDecodeError:
-                    print(f"Error: {filename} is not a valid JSON file")
+                        data = json.load(file)
+                        # Remove the .json extension for the key
+                        gameweek_name = filename.replace('.json', '')
+                        gameweek_data[gameweek_name] = data
+                        print(f"Loaded {len(data) if isinstance(data, list) else 'non-list'} entries from {filename}")
+                except json.JSONDecodeError as e:
+                    print(f"JSON decode error in {filename}: {str(e)}")
                 except Exception as e:
                     print(f"Error loading {filename}: {str(e)}")
-    except FileNotFoundError:
-        print(f"Directory '{directory}' not found")
+    except Exception as e:
+        print(f"Error accessing directory '{directory}': {str(e)}")
     
     return gameweek_data
 
+def safe_get_roster_field(roster: Dict, field: str, default: str = "Unknown") -> str:
+    """Safely get a field from roster with error handling."""
+    try:
+        if roster is None:
+            return default
+        value = roster.get(field, default)
+        return value if value is not None else default
+    except Exception:
+        return default
+
 
 def get_user_roster(roster: Dict) -> Set[str]:
-    """Extract all players from a user's roster."""
+    """Extract all players from a user's roster with error handling."""
+    if roster is None:
+        return set()
+    
     players = set()
-    players.add(roster.get("tank", "Unknown"))
-    players.add(roster.get("dpsOne", "Unknown"))
-    players.add(roster.get("dpsTwo", "Unknown"))
-    players.add(roster.get("supportOne", "Unknown"))
-    players.add(roster.get("supportTwo", "Unknown"))
+    try:
+        players.add(safe_get_roster_field(roster, "tank"))
+        players.add(safe_get_roster_field(roster, "dpsOne"))
+        players.add(safe_get_roster_field(roster, "dpsTwo"))
+        players.add(safe_get_roster_field(roster, "supportOne"))
+        players.add(safe_get_roster_field(roster, "supportTwo"))
+        # Remove "Unknown" if it was added
+        players.discard("Unknown")
+    except Exception as e:
+        print(f"Error processing roster: {str(e)}")
+    
     return players
 
-def calculate_transfers(current_gw_data: List[Dict], previous_gw_data: List[Dict]) -> Dict[str, Dict]:
+def calculate_transfers(current_gw_data: List[Dict], previous_gw_data: List[Dict]) -> Tuple[Dict[str, Dict], int]:
     """Calculate transfer in/out data by comparing gameweeks."""
-    previous_rosters = {roster["username"]: roster for roster in previous_gw_data}
+    if not current_gw_data or not previous_gw_data:
+        return {}, 0
     
-    transfer_stats = {}
-    existing_users = 0
-    
-    for current_roster in current_gw_data:
-        username = current_roster["username"]
+    try:
+        previous_rosters = {roster["username"]: roster for roster in previous_gw_data if roster and "username" in roster}
         
-        if username in previous_rosters:
-            existing_users += 1
-            previous_roster = previous_rosters[username]
-            
-            current_players = get_user_roster(current_roster)
-            previous_players = get_user_roster(previous_roster)
-            
-            transferred_in = current_players - previous_players
-            transferred_out = previous_players - current_players
-            
-            for player in transferred_in:
-                if player not in transfer_stats:
-                    transfer_stats[player] = {"transferred_in": 0, "transferred_out": 0}
-                transfer_stats[player]["transferred_in"] += 1
+        transfer_stats = {}
+        existing_users = 0
+        
+        for current_roster in current_gw_data:
+            if not current_roster or "username" not in current_roster:
+                continue
                 
-            for player in transferred_out:
-                if player not in transfer_stats:
-                    transfer_stats[player] = {"transferred_in": 0, "transferred_out": 0}
-                transfer_stats[player]["transferred_out"] += 1
-    
-    return transfer_stats, existing_users
+            username = current_roster["username"]
+            
+            if username in previous_rosters:
+                existing_users += 1
+                previous_roster = previous_rosters[username]
+                
+                current_players = get_user_roster(current_roster)
+                previous_players = get_user_roster(previous_roster)
+                
+                transferred_in = current_players - previous_players
+                transferred_out = previous_players - current_players
+                
+                for player in transferred_in:
+                    if player and player != "Unknown":
+                        if player not in transfer_stats:
+                            transfer_stats[player] = {"transferred_in": 0, "transferred_out": 0}
+                        transfer_stats[player]["transferred_in"] += 1
+                    
+                for player in transferred_out:
+                    if player and player != "Unknown":
+                        if player not in transfer_stats:
+                            transfer_stats[player] = {"transferred_in": 0, "transferred_out": 0}
+                        transfer_stats[player]["transferred_out"] += 1
+        
+        return transfer_stats, existing_users
+    except Exception as e:
+        print(f"Error calculating transfers: {str(e)}")
+        return {}, 0
 
 def analyze_player_frequency(rosters: List[Dict], transfer_data: Dict = None, existing_users: int = 0) -> List[Dict]:
     """Analyze player selection frequency in rosters with optional transfer data."""
-    player_stats = {}
-    total_teams = len(rosters)
+    if not rosters:
+        return []
     
-    for roster in rosters:
-        tank_player = roster.get("tank", "Unknown")
-        if tank_player not in player_stats:
-            player_stats[tank_player] = {"role": "tank", "count": 0}
-        player_stats[tank_player]["count"] += 1
+    try:
+        player_stats = {}
+        total_teams = len(rosters)
         
-        for dps_key in ["dpsOne", "dpsTwo"]:
-            dps_player = roster.get(dps_key, "Unknown")
-            if dps_player not in player_stats:
-                player_stats[dps_player] = {"role": "dps", "count": 0}
-            player_stats[dps_player]["count"] += 1
-        
-        for support_key in ["supportOne", "supportTwo"]:
-            support_player = roster.get(support_key, "Unknown")
-            if support_player not in player_stats:
-                player_stats[support_player] = {"role": "support", "count": 0}
-            player_stats[support_player]["count"] += 1
-    
-    result = []
-    for player_name, stats in player_stats.items():
-        percentage = (stats["count"] / total_teams) * 100
-        
-        player_data = {
-            "name": player_name,
-            "role": stats["role"],
-            "count": stats["count"],
-            "percentage": round(percentage, 1)
-        }
-        
-        if transfer_data and player_name in transfer_data:
-            transfers = transfer_data[player_name]
-            player_data["transferred_in"] = transfers["transferred_in"]
-            player_data["transferred_out"] = transfers["transferred_out"]
-            player_data["net_transfers"] = transfers["transferred_in"] - transfers["transferred_out"]
+        for roster in rosters:
+            if not roster:
+                continue
+                
+            # Tank player
+            tank_player = safe_get_roster_field(roster, "tank")
+            if tank_player and tank_player != "Unknown":
+                if tank_player not in player_stats:
+                    player_stats[tank_player] = {"role": "tank", "count": 0}
+                player_stats[tank_player]["count"] += 1
             
-            if existing_users > 0:
-                player_data["transfer_in_pct"] = round((transfers['transferred_in'] / existing_users) * 100, 1)
-                player_data["transfer_out_pct"] = round((transfers['transferred_out'] / existing_users) * 100, 1)
-            else:
-                player_data["transfer_in_pct"] = 0.0
-                player_data["transfer_out_pct"] = 0.0
-        else:
-            if transfer_data is not None:
-                player_data.update({
-                    "transferred_in": 0,
-                    "transferred_out": 0,
-                    "net_transfers": 0,
-                    "transfer_in_pct": 0.0,
-                    "transfer_out_pct": 0.0
-                })
+            # DPS players
+            for dps_key in ["dpsOne", "dpsTwo"]:
+                dps_player = safe_get_roster_field(roster, dps_key)
+                if dps_player and dps_player != "Unknown":
+                    if dps_player not in player_stats:
+                        player_stats[dps_player] = {"role": "dps", "count": 0}
+                    player_stats[dps_player]["count"] += 1
+            
+            # Support players
+            for support_key in ["supportOne", "supportTwo"]:
+                support_player = safe_get_roster_field(roster, support_key)
+                if support_player and support_player != "Unknown":
+                    if support_player not in player_stats:
+                        player_stats[support_player] = {"role": "support", "count": 0}
+                    player_stats[support_player]["count"] += 1
         
-        result.append(player_data)
-    
-    result.sort(key=lambda x: (-x["count"], x["name"]))
-    
-    return result
+        result = []
+        for player_name, stats in player_stats.items():
+            if not player_name or player_name == "Unknown":
+                continue
+                
+            percentage = (stats["count"] / total_teams) * 100 if total_teams > 0 else 0
+            
+            player_data = {
+                "name": player_name,
+                "role": stats["role"],
+                "count": stats["count"],
+                "percentage": round(percentage, 1)
+            }
+            
+            if transfer_data and player_name in transfer_data:
+                transfers = transfer_data[player_name]
+                player_data["transferred_in"] = transfers["transferred_in"]
+                player_data["transferred_out"] = transfers["transferred_out"]
+                player_data["net_transfers"] = transfers["transferred_in"] - transfers["transferred_out"]
+                
+                if existing_users > 0:
+                    player_data["transfer_in_pct"] = round((transfers['transferred_in'] / existing_users) * 100, 1)
+                    player_data["transfer_out_pct"] = round((transfers['transferred_out'] / existing_users) * 100, 1)
+                else:
+                    player_data["transfer_in_pct"] = 0.0
+                    player_data["transfer_out_pct"] = 0.0
+            else:
+                if transfer_data is not None:
+                    player_data.update({
+                        "transferred_in": 0,
+                        "transferred_out": 0,
+                        "net_transfers": 0,
+                        "transfer_in_pct": 0.0,
+                        "transfer_out_pct": 0.0
+                    })
+            
+            result.append(player_data)
+        
+        result.sort(key=lambda x: (-x["count"], x["name"]))
+        return result
+        
+    except Exception as e:
+        print(f"Error analyzing player frequency: {str(e)}")
+        return []
 
 def generate_leaderboard(current_gw_data: List[Dict], previous_gw_data: List[Dict] = None, gameweek_name: str = "") -> List[Dict]:
     """Generate leaderboard with weekly points, overall positions, and position changes."""
-    leaderboard = []
+    if not current_gw_data:
+        return []
     
-    previous_rosters = {}
-    previous_total_positions = {}
-    
-    if previous_gw_data:
-        previous_rosters = {roster["username"]: roster for roster in previous_gw_data}
+    try:
+        leaderboard = []
         
-        previous_total_leaderboard = sorted(previous_gw_data, key=lambda x: float(x.get("score", 0)), reverse=True)
-        previous_total_positions = {roster["username"]: i + 1 for i, roster in enumerate(previous_total_leaderboard)}
-    
-    current_total_leaderboard = sorted(current_gw_data, key=lambda x: float(x.get("score", 0)), reverse=True)
-    current_total_positions = {roster["username"]: i + 1 for i, roster in enumerate(current_total_leaderboard)}
-    
-    for roster in current_gw_data:
-        username = roster["username"]
-        current_total_score = float(roster.get("score", 0))
+        previous_rosters = {}
+        previous_total_positions = {}
         
-        weekly_points = current_total_score
-        if username in previous_rosters:
-            previous_total_score = float(previous_rosters[username].get("score", 0))
-            weekly_points = current_total_score - previous_total_score
-        
-        leaderboard_entry = {
-            "username": username,
-            "weekly_points": round(weekly_points, 1),
-            "current_total_score": round(current_total_score, 1),
-            "current_overall_position": current_total_positions[username],
-            "transferred_in": [],
-            "transferred_out": [],
-            "tank": roster.get("tank", "Unknown"),
-            "dpsOne": roster.get("dpsOne", "Unknown"),
-            "dpsTwo": roster.get("dpsTwo", "Unknown"),
-            "supportOne": roster.get("supportOne", "Unknown"),
-            "supportTwo": roster.get("supportTwo", "Unknown")
-        }
-        
-        if username in previous_rosters:
-            previous_total_score = float(previous_rosters[username].get("score", 0))
-            previous_overall_position = previous_total_positions.get(username)
+        if previous_gw_data:
+            previous_rosters = {roster["username"]: roster for roster in previous_gw_data if roster and "username" in roster}
             
-            leaderboard_entry["previous_total_score"] = round(previous_total_score, 1)
-            leaderboard_entry["previous_overall_position"] = previous_overall_position
+            # Filter and sort previous data safely
+            valid_previous = [roster for roster in previous_gw_data if roster and "score" in roster]
+            previous_total_leaderboard = sorted(valid_previous, key=lambda x: float(x.get("score", 0)), reverse=True)
+            previous_total_positions = {roster["username"]: i + 1 for i, roster in enumerate(previous_total_leaderboard)}
+        
+        # Filter and sort current data safely
+        valid_current = [roster for roster in current_gw_data if roster and "score" in roster and "username" in roster]
+        current_total_leaderboard = sorted(valid_current, key=lambda x: float(x.get("score", 0)), reverse=True)
+        current_total_positions = {roster["username"]: i + 1 for i, roster in enumerate(current_total_leaderboard)}
+        
+        for roster in valid_current:
+            username = roster["username"]
+            current_total_score = float(roster.get("score", 0))
             
-            if previous_overall_position is not None:
-                overall_position_change = previous_overall_position - leaderboard_entry["current_overall_position"]
-                leaderboard_entry["overall_position_change"] = overall_position_change
+            weekly_points = current_total_score
+            if username in previous_rosters:
+                previous_total_score = float(previous_rosters[username].get("score", 0))
+                weekly_points = current_total_score - previous_total_score
+            
+            leaderboard_entry = {
+                "username": username,
+                "weekly_points": round(weekly_points, 1),
+                "current_total_score": round(current_total_score, 1),
+                "current_overall_position": current_total_positions[username],
+                "transferred_in": [],
+                "transferred_out": [],
+                "tank": safe_get_roster_field(roster, "tank"),
+                "dpsOne": safe_get_roster_field(roster, "dpsOne"),
+                "dpsTwo": safe_get_roster_field(roster, "dpsTwo"),
+                "supportOne": safe_get_roster_field(roster, "supportOne"),
+                "supportTwo": safe_get_roster_field(roster, "supportTwo")
+            }
+            
+            if username in previous_rosters:
+                previous_total_score = float(previous_rosters[username].get("score", 0))
+                previous_overall_position = previous_total_positions.get(username)
+                
+                leaderboard_entry["previous_total_score"] = round(previous_total_score, 1)
+                leaderboard_entry["previous_overall_position"] = previous_overall_position
+                
+                if previous_overall_position is not None:
+                    overall_position_change = previous_overall_position - leaderboard_entry["current_overall_position"]
+                    leaderboard_entry["overall_position_change"] = overall_position_change
+                else:
+                    leaderboard_entry["overall_position_change"] = 0
+                
+                current_players = get_user_roster(roster)
+                previous_players = get_user_roster(previous_rosters[username])
+                
+                transferred_in = current_players - previous_players
+                transferred_out = previous_players - current_players
+                
+                leaderboard_entry["transferred_in"] = list(transferred_in)
+                leaderboard_entry["transferred_out"] = list(transferred_out)
             else:
+                leaderboard_entry["previous_total_score"] = None
+                leaderboard_entry["previous_overall_position"] = None
                 leaderboard_entry["overall_position_change"] = 0
             
-            current_players = get_user_roster(roster)
-            previous_players = get_user_roster(previous_rosters[username])
-            
-            transferred_in = current_players - previous_players
-            transferred_out = previous_players - current_players
-            
-            leaderboard_entry["transferred_in"] = list(transferred_in)
-            leaderboard_entry["transferred_out"] = list(transferred_out)
-        else:
-            leaderboard_entry["previous_total_score"] = None
-            leaderboard_entry["previous_overall_position"] = None
-            leaderboard_entry["overall_position_change"] = 0
+            leaderboard.append(leaderboard_entry)
         
-        leaderboard.append(leaderboard_entry)
-    
-    leaderboard.sort(key=lambda x: x["weekly_points"], reverse=True)
-    
-    for i, entry in enumerate(leaderboard, 1):
-        entry["weekly_position"] = i
-    
-    return leaderboard
+        leaderboard.sort(key=lambda x: x["weekly_points"], reverse=True)
+        
+        for i, entry in enumerate(leaderboard, 1):
+            entry["weekly_position"] = i
+        
+        return leaderboard
+    except Exception as e:
+        print(f"Error generating leaderboard: {str(e)}")
+        return []
 
 def process_all_gameweeks():
     """Process all gameweek data and return structured data for the web interface."""
-    directory = get_leaderboard_path()
-    gameweek_data = load_json_files(directory)
-    
-    if not gameweek_data:
-        return {"leaderboards": {}, "transfers": {}, "stages": {}}
-    
-    # [Rest of your process_all_gameweeks function...]
+    try:
+        directory = get_leaderboard_path()
+        gameweek_data = load_json_files(directory)
+        
+        print(f"Loaded gameweeks: {list(gameweek_data.keys())}")
+        
+        if not gameweek_data:
+            return {"leaderboards": {}, "transfers": {}, "stages": {}}
+        
+        # Sort gameweeks to ensure proper order
+        def gameweek_sort_key(gw_name):
+            if 'playoff' in gw_name.lower():
+                # Extract number from playoff name
+                num = ''.join(filter(str.isdigit, gw_name))
+                return (1, int(num) if num else 0)  # playoffs come after regular season
+            else:
+                # Extract number from regular gameweek name
+                num = ''.join(filter(str.isdigit, gw_name))
+                return (0, int(num) if num else 0)  # regular season comes first
+        
+        sorted_gameweeks = sorted(gameweek_data.items(), key=lambda x: gameweek_sort_key(x[0]))
+        previous_gw_data = None
+        
+        leaderboards = {}
+        transfers = {}
+        stages = {}
+        
+        for i, (gameweek_name, rosters) in enumerate(sorted_gameweeks):
+            print(f"Processing {gameweek_name} with {len(rosters) if isinstance(rosters, list) else 'non-list'} entries")
+            
+            # Ensure rosters is a list
+            if not isinstance(rosters, list):
+                print(f"Warning: {gameweek_name} data is not a list, skipping")
+                continue
+            
+            # Filter out None entries
+            rosters = [r for r in rosters if r is not None]
+            
+            if not rosters:
+                print(f"Warning: No valid rosters found in {gameweek_name}")
+                continue
+            
+            # Determine stage
+            if 'playoff' in gameweek_name.lower():
+                stage = "Stage 2 Playoffs"
+            else:
+                stage = "Stage 2 Regular Season"
+            
+            if stage not in stages:
+                stages[stage] = []
+            stages[stage].append(gameweek_name)
+            
+            # Calculate transfers if we have previous gameweek data
+            transfer_data = None
+            existing_users = 0
+            new_users = 0
+            if previous_gw_data is not None:
+                transfer_data, existing_users = calculate_transfers(rosters, previous_gw_data)
+                new_users = len(rosters) - existing_users
+            else:
+                new_users = len(rosters)
+            
+            # Analyze player frequency for transfers
+            player_analysis = analyze_player_frequency(rosters, transfer_data, existing_users)
+            transfers[gameweek_name] = player_analysis
+            
+            # Generate leaderboard
+            leaderboard = generate_leaderboard(rosters, previous_gw_data, gameweek_name)
+            
+            # Calculate average points
+            total_points = sum(entry["weekly_points"] for entry in leaderboard)
+            average_points = round(total_points / len(leaderboard), 1) if leaderboard else 0
+            
+            leaderboards[gameweek_name] = {
+                "data": leaderboard,
+                "total_participants": len(leaderboard),
+                "new_users": new_users,
+                "existing_users": existing_users,
+                "average_points": average_points
+            }
+            
+            # Store current gameweek data for next iteration
+            previous_gw_data = rosters
+        
+        result = {
+            "leaderboards": leaderboards,
+            "transfers": transfers,
+            "stages": stages
+        }
+        
+        print(f"Processed {len(leaderboards)} gameweeks successfully")
+        return result
+        
+    except Exception as e:
+        print(f"Error in process_all_gameweeks: {str(e)}")
+        return {"leaderboards": {}, "transfers": {}, "stages": {}, "error": str(e)}
 
 # Routes
 @app.route('/')
