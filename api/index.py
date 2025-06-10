@@ -273,10 +273,60 @@ def generate_match_result(match_data):
     
     return f"{competition_name}\n{team1} {team1_score} - {team2} {team2_score}\n\n"
 
-def process_match(match_url, side_by_side=False):
-    """Process a FACEIT match URL and generate fantasy report."""
+def extract_match_id(input_string):
+    """
+    Extract match ID from various input formats:
+    - Full FACEIT URL: https://www.faceit.com/en/ow2/room/1-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    - URL with /scoreboard: https://www.faceit.com/en/ow2/room/1-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/scoreboard
+    - Just the match ID: 1-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    """
+    import re
+    
+    # Remove any trailing whitespace
+    input_string = input_string.strip()
+    
+    # Pattern for FACEIT match ID (starts with 1- followed by UUID format)
+    match_id_pattern = r'(1-[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})'
+    
+    # Try to find the match ID in the input string
+    match = re.search(match_id_pattern, input_string, re.IGNORECASE)
+    
+    if match:
+        return match.group(1)
+    
+    # If no match found, check if it looks like a direct match ID
+    # FACEIT match IDs follow the pattern: 1-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    direct_id_pattern = r'^1-[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$'
+    
+    if re.match(direct_id_pattern, input_string, re.IGNORECASE):
+        return input_string
+    
+    # If still no match, try the old method (last part after /)
+    if '/' in input_string:
+        parts = input_string.split('/')
+        potential_id = parts[-1]
+        
+        # Remove /scoreboard if it's there
+        if potential_id == 'scoreboard' and len(parts) > 1:
+            potential_id = parts[-2]
+        
+        # Check if this looks like a match ID
+        if re.match(direct_id_pattern, potential_id, re.IGNORECASE):
+            return potential_id
+    
+    # If we still can't extract it, return the original input and let the API handle the error
+    return input_string
+
+def process_match(match_input, side_by_side=False):
+    """Process a FACEIT match URL/ID and generate fantasy report."""
     try:
-        match_id = match_url.split("/")[-1]
+        # Extract match ID from various input formats
+        match_id = extract_match_id(match_input)
+        
+        # Log for debugging (you can remove this later)
+        print(f"Original input: {match_input}")
+        print(f"Extracted match ID: {match_id}")
+        
         match_data = get_match_data(match_id, API_KEY)
         match_stats = get_match_stats(match_id, API_KEY)
         
@@ -290,7 +340,7 @@ def process_match(match_url, side_by_side=False):
         
         return report
     except Exception as e:
-        return f"Error processing match: {str(e)}"
+        return f"Error processing match: {str(e)}\n\nPlease ensure you're using a valid FACEIT match URL or match ID."
 
 # ============================================================================
 # LEADERBOARD DATA PROCESSING FUNCTIONS
