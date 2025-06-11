@@ -8,6 +8,7 @@ import json
 from typing import Dict, List, Set, Tuple
 from datetime import datetime
 import hashlib
+import re
 
 # Load environment variables
 load_dotenv()
@@ -40,6 +41,48 @@ def get_leaderboard_path():
     """Get the correct path for leaderboard data directory."""
     current_dir = os.path.dirname(os.path.abspath(__file__))
     return os.path.join(os.path.dirname(current_dir), 'leaderboard-data')
+
+def extract_match_id(input_string):
+    """
+    Extract match ID from various input formats:
+    - Full FACEIT URL: https://www.faceit.com/en/ow2/room/1-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    - URL with /scoreboard: https://www.faceit.com/en/ow2/room/1-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/scoreboard
+    - Just the match ID: 1-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    """
+    # Remove any trailing whitespace
+    input_string = input_string.strip()
+    
+    # Pattern for FACEIT match ID (starts with 1- followed by UUID format)
+    match_id_pattern = r'(1-[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})'
+    
+    # Try to find the match ID in the input string
+    match = re.search(match_id_pattern, input_string, re.IGNORECASE)
+    
+    if match:
+        return match.group(1)
+    
+    # If no match found, check if it looks like a direct match ID
+    # FACEIT match IDs follow the pattern: 1-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    direct_id_pattern = r'^1-[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$'
+    
+    if re.match(direct_id_pattern, input_string, re.IGNORECASE):
+        return input_string
+    
+    # If still no match, try the old method (last part after /)
+    if '/' in input_string:
+        parts = input_string.split('/')
+        potential_id = parts[-1]
+        
+        # Remove /scoreboard if it's there
+        if potential_id == 'scoreboard' and len(parts) > 1:
+            potential_id = parts[-2]
+        
+        # Check if this looks like a match ID
+        if re.match(direct_id_pattern, potential_id, re.IGNORECASE):
+            return potential_id
+    
+    # If we still can't extract it, return the original input and let the API handle the error
+    return input_string
 
 # ============================================================================
 # FACEIT API FUNCTIONS
@@ -272,50 +315,6 @@ def generate_match_result(match_data):
     competition_name = match_data["competition_name"]
     
     return f"{competition_name}\n{team1} {team1_score} - {team2} {team2_score}\n\n"
-
-def extract_match_id(input_string):
-    """
-    Extract match ID from various input formats:
-    - Full FACEIT URL: https://www.faceit.com/en/ow2/room/1-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-    - URL with /scoreboard: https://www.faceit.com/en/ow2/room/1-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/scoreboard
-    - Just the match ID: 1-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-    """
-    import re
-    
-    # Remove any trailing whitespace
-    input_string = input_string.strip()
-    
-    # Pattern for FACEIT match ID (starts with 1- followed by UUID format)
-    match_id_pattern = r'(1-[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})'
-    
-    # Try to find the match ID in the input string
-    match = re.search(match_id_pattern, input_string, re.IGNORECASE)
-    
-    if match:
-        return match.group(1)
-    
-    # If no match found, check if it looks like a direct match ID
-    # FACEIT match IDs follow the pattern: 1-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-    direct_id_pattern = r'^1-[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$'
-    
-    if re.match(direct_id_pattern, input_string, re.IGNORECASE):
-        return input_string
-    
-    # If still no match, try the old method (last part after /)
-    if '/' in input_string:
-        parts = input_string.split('/')
-        potential_id = parts[-1]
-        
-        # Remove /scoreboard if it's there
-        if potential_id == 'scoreboard' and len(parts) > 1:
-            potential_id = parts[-2]
-        
-        # Check if this looks like a match ID
-        if re.match(direct_id_pattern, potential_id, re.IGNORECASE):
-            return potential_id
-    
-    # If we still can't extract it, return the original input and let the API handle the error
-    return input_string
 
 def process_match(match_input, side_by_side=False):
     """Process a FACEIT match URL/ID and generate fantasy report."""
