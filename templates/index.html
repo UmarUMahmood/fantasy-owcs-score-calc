@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fantasy OWCS Dashboard</title>
     <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
-
+    
     <!-- Vercel Analytics -->
     <script>
         window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
     </script>
     <script defer src="/_vercel/insights/script.js"></script>
-
+    
     <style>
         /* ============================================================================
            BASE STYLES
@@ -240,6 +240,96 @@
             padding: 8px 12px;
             font-size: 14px;
             margin-bottom: 0;
+        }
+
+        /* ============================================================================
+           TRANSFER FILTER COMPONENT
+           ============================================================================ */
+
+        .transfer-filter-container {
+            min-width: 300px;
+            flex: 1;
+            max-width: 100%;
+        }
+
+        .transfer-filter-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            padding: 8px 0;
+            border-bottom: 2px solid var(--light-bg);
+            margin-bottom: 10px;
+        }
+
+        .transfer-filter-header:hover {
+            color: var(--primary-orange);
+        }
+
+        .transfer-filter-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .transfer-filter-content.expanded {
+            max-height: 400px;
+        }
+
+        .transfer-filter-section {
+            margin-bottom: 20px;
+        }
+
+        .transfer-filter-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--primary-orange);
+        }
+
+        .transfer-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .transfer-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .transfer-option select {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        .transfer-option label {
+            min-width: 120px;
+            margin-bottom: 0;
+            font-size: 14px;
+        }
+
+        .transfer-filter-controls {
+            margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .reset-transfer-filter-btn {
+            background-color: var(--text-muted);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .reset-transfer-filter-btn:hover {
+            background-color: #5a6268;
         }
 
         /* ============================================================================
@@ -638,7 +728,7 @@
                 align-items: stretch;
             }
 
-            .player-filter-container {
+            .player-filter-container, .transfer-filter-container {
                 min-width: 100%;
                 max-width: 100%;
             }
@@ -660,9 +750,18 @@
                 font-size: 13px;
             }
 
-            .filter-controls {
+            .filter-controls, .transfer-filter-controls {
                 flex-direction: column;
                 align-items: flex-start;
+            }
+
+            .transfer-option {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .transfer-option label {
+                min-width: auto;
             }
         }
     </style>
@@ -692,13 +791,14 @@
                 <p><strong>Get a match link from FACEIT here</strong> (<a href="https://www.faceit.com/en/home">sign-in on FACEIT</a> if it doesn't work):</p>
                 <a href="https://www.faceit.com/en/ow2/league/FACEIT%20League/88c7f7ec-4cb8-44d3-a5db-6e808639c232/19cfb5d9-6a70-45cc-904f-2e8ef6f80a4b/matches?region=65b085e4-7e28-49f3-a6c1-9e12faaa343b&division=47812350-e0c6-48fd-8ff9-19d184236957&stage=ccea29fe-582e-4619-8afa-858bacc89a4f&conference=6306d719-8c2d-471c-bc42-421ada64911b" target="_blank">FACEIT EMEA Matches</a> | 
                 <a href="https://www.faceit.com/en/ow2/league/FACEIT%20League/88c7f7ec-4cb8-44d3-a5db-6e808639c232/19cfb5d9-6a70-45cc-904f-2e8ef6f80a4b/matches?region=e80b15e5-92eb-4500-8814-2353162a4727&division=d9e85be4-5622-430f-9f3f-f2f39485d28b&stage=ad5d41df-d838-4358-9cb0-dc464b79624e&conference=83cf0d5b-329b-4ac7-80c0-282238c336e3" target="_blank">FACEIT NA Matches</a>
+                <p><small><strong>Tip:</strong> You can paste the full match URL, URL with /scoreboard, or just the match ID directly!</small></p>
             </div>
 
             <form id="matchForm">
                 <label for="matchUrl">Paste FACEIT Match URL or Match ID:</label>
                 <input type="text" id="matchUrl" name="match_url" 
-                    placeholder="https://www.faceit.com/en/ow2/room/1-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx or just 1-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" 
-                    required>
+                       placeholder="https://www.faceit.com/en/ow2/room/1-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx or just 1-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" 
+                       required>
                 <button type="submit">Generate Report</button>
             </form>
             
@@ -727,21 +827,68 @@
                             <input type="text" id="username-search" placeholder="Enter username...">
                         </div>
                     </div>
-                    <div class="player-filter-container">
-                        <div class="player-filter-header" onclick="togglePlayerFilter()">
-                            <label style="margin: 0; cursor: pointer;">Filter by Players</label>
-                            <span class="filter-arrow" id="filter-arrow">▼</span>
-                            <span class="selected-count" id="selected-count" style="display: none;">0</span>
-                        </div>
-                        <div class="player-filter-content" id="player-filter-content">
-                            <div class="filter-controls">
-                                <button type="button" class="reset-filter-btn" onclick="resetPlayerFilter()">Reset Filter</button>
-                                <div class="exact-match-container">
-                                    <input type="checkbox" id="exact-match-checkbox" onchange="handleExactMatchChange()">
-                                    <label for="exact-match-checkbox">Exact Combination Match</label>
+                    <div class="controls-row">
+                        <div class="transfer-filter-container">
+                            <div class="transfer-filter-header" onclick="toggleTransferFilter()">
+                                <label style="margin: 0; cursor: pointer;">Filter by Transfers</label>
+                                <span class="filter-arrow" id="transfer-filter-arrow">▼</span>
+                            </div>
+                            <div class="transfer-filter-content" id="transfer-filter-content">
+                                <div class="transfer-filter-controls">
+                                    <button type="button" class="reset-transfer-filter-btn" onclick="resetTransferFilter()">Reset Transfer Filter</button>
+                                </div>
+                                <div class="transfer-filter-section">
+                                    <div class="transfer-filter-title">Players Transferred In</div>
+                                    <div class="transfer-options">
+                                        <div class="transfer-option">
+                                            <label>Player 1:</label>
+                                            <select id="transfer-in-1" onchange="handleTransferFilterChange()">
+                                                <option value="">Select player...</option>
+                                            </select>
+                                        </div>
+                                        <div class="transfer-option">
+                                            <label>Player 2:</label>
+                                            <select id="transfer-in-2" onchange="handleTransferFilterChange()">
+                                                <option value="">Select player...</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="transfer-filter-section">
+                                    <div class="transfer-filter-title">Players Transferred Out</div>
+                                    <div class="transfer-options">
+                                        <div class="transfer-option">
+                                            <label>Player 1:</label>
+                                            <select id="transfer-out-1" onchange="handleTransferFilterChange()">
+                                                <option value="">Select player...</option>
+                                            </select>
+                                        </div>
+                                        <div class="transfer-option">
+                                            <label>Player 2:</label>
+                                            <select id="transfer-out-2" onchange="handleTransferFilterChange()">
+                                                <option value="">Select player...</option>
+                                            </select>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <div id="player-filter-roles"></div>
+                        </div>
+                        <div class="player-filter-container">
+                            <div class="player-filter-header" onclick="togglePlayerFilter()">
+                                <label style="margin: 0; cursor: pointer;">Filter by Players</label>
+                                <span class="filter-arrow" id="filter-arrow">▼</span>
+                                <span class="selected-count" id="selected-count" style="display: none;">0</span>
+                            </div>
+                            <div class="player-filter-content" id="player-filter-content">
+                                <div class="filter-controls">
+                                    <button type="button" class="reset-filter-btn" onclick="resetPlayerFilter()">Reset Filter</button>
+                                    <div class="exact-match-container">
+                                        <input type="checkbox" id="exact-match-checkbox" onchange="handleExactMatchChange()">
+                                        <label for="exact-match-checkbox">Exact Combination Match</label>
+                                    </div>
+                                </div>
+                                <div id="player-filter-roles"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -848,6 +995,10 @@
         let currentSortDirection = 'desc';
         let selectedPlayers = new Set();
         let exactMatchMode = false;
+        let transferFilters = {
+            transferredIn: [],
+            transferredOut: []
+        };
 
         // ============================================================================
         // INITIALIZATION
@@ -999,6 +1150,7 @@
 
             // Setup components
             setupPlayerFilterLayout();
+            setupTransferFilterOptions();
             setupTableSorting('leaderboard-table');
             displayLeaderboard();
             
@@ -1106,6 +1258,89 @@
                 
                 return direction === 'asc' ? (aVal > bVal ? 1 : -1) : (aVal < bVal ? 1 : -1);
             });
+        }
+
+        // ============================================================================
+        // TRANSFER FILTER
+        // ============================================================================
+        
+        function setupTransferFilterOptions() {
+            // Get all unique players who have been transferred
+            const allTransferredPlayers = new Set();
+            
+            Object.values(allData.leaderboards).forEach(gw => {
+                gw.data.forEach(entry => {
+                    if (entry.transferred_in) {
+                        entry.transferred_in.forEach(player => allTransferredPlayers.add(player));
+                    }
+                    if (entry.transferred_out) {
+                        entry.transferred_out.forEach(player => allTransferredPlayers.add(player));
+                    }
+                });
+            });
+
+            const sortedPlayers = Array.from(allTransferredPlayers).sort((a, b) => 
+                a.toLowerCase().localeCompare(b.toLowerCase())
+            );
+
+            // Populate all transfer filter dropdowns
+            const transferSelectors = [
+                'transfer-in-1', 'transfer-in-2', 
+                'transfer-out-1', 'transfer-out-2'
+            ];
+
+            transferSelectors.forEach(selectorId => {
+                const select = document.getElementById(selectorId);
+                select.innerHTML = '<option value="">Select player...</option>';
+                
+                sortedPlayers.forEach(player => {
+                    const option = document.createElement('option');
+                    option.value = player;
+                    option.textContent = player;
+                    select.appendChild(option);
+                });
+            });
+        }
+
+        function toggleTransferFilter() {
+            const content = document.getElementById('transfer-filter-content');
+            const arrow = document.getElementById('transfer-filter-arrow');
+            
+            const isExpanded = content.classList.contains('expanded');
+            if (isExpanded) {
+                content.classList.remove('expanded');
+                arrow.classList.remove('expanded');
+            } else {
+                content.classList.add('expanded');
+                arrow.classList.add('expanded');
+            }
+        }
+
+        function handleTransferFilterChange() {
+            transferFilters.transferredIn = [
+                document.getElementById('transfer-in-1').value,
+                document.getElementById('transfer-in-2').value
+            ].filter(value => value !== '');
+
+            transferFilters.transferredOut = [
+                document.getElementById('transfer-out-1').value,
+                document.getElementById('transfer-out-2').value
+            ].filter(value => value !== '');
+
+            displayLeaderboard();
+        }
+
+        function resetTransferFilter() {
+            transferFilters.transferredIn = [];
+            transferFilters.transferredOut = [];
+            
+            // Reset all transfer filter dropdowns
+            document.getElementById('transfer-in-1').value = '';
+            document.getElementById('transfer-in-2').value = '';
+            document.getElementById('transfer-out-1').value = '';
+            document.getElementById('transfer-out-2').value = '';
+            
+            displayLeaderboard();
         }
 
         // ============================================================================
@@ -1231,6 +1466,10 @@
             });
             event.target.classList.add('active');
             
+            // Reset transfer filter options for new gameweek
+            setupTransferFilterOptions();
+            resetTransferFilter();
+            
             displayLeaderboard();
         }
 
@@ -1258,29 +1497,53 @@
             const gameweekData = allData.leaderboards[currentLeaderboardGameweek];
             const searchTerm = document.getElementById('username-search').value.toLowerCase();
 
-            // Filter data based on search and player selection
+            // Filter data based on search, player selection, and transfers
             let filteredData = gameweekData.data.filter(entry => {
                 const matchesSearch = !searchTerm || entry.username.toLowerCase().includes(searchTerm);
                 
-                if (selectedPlayers.size === 0) {
-                    return matchesSearch;
+                // Check player filter
+                let matchesPlayerFilter = true;
+                if (selectedPlayers.size > 0) {
+                    const teamPlayers = [entry.tank, entry.dpsOne, entry.dpsTwo, entry.supportOne, entry.supportTwo];
+                    
+                    if (exactMatchMode) {
+                        // Exact match mode - ALL selected players must be in the team
+                        matchesPlayerFilter = Array.from(selectedPlayers).every(player => 
+                            teamPlayers.includes(player)
+                        );
+                    } else {
+                        // Regular mode - ANY selected player can be in the team
+                        matchesPlayerFilter = Array.from(selectedPlayers).some(player => 
+                            teamPlayers.includes(player)
+                        );
+                    }
                 }
 
-                const teamPlayers = [entry.tank, entry.dpsOne, entry.dpsTwo, entry.supportOne, entry.supportTwo];
-                
-                if (exactMatchMode) {
-                    // Exact match mode - ALL selected players must be in the team
-                    const hasAllSelectedPlayers = Array.from(selectedPlayers).every(player => 
-                        teamPlayers.includes(player)
-                    );
-                    return matchesSearch && hasAllSelectedPlayers;
-                } else {
-                    // Regular mode - ANY selected player can be in the team
-                    const hasAnySelectedPlayer = Array.from(selectedPlayers).some(player => 
-                        teamPlayers.includes(player)
-                    );
-                    return matchesSearch && hasAnySelectedPlayer;
+                // Check transfer filter
+                let matchesTransferFilter = true;
+                if (transferFilters.transferredIn.length > 0 || transferFilters.transferredOut.length > 0) {
+                    const entryTransferredIn = entry.transferred_in || [];
+                    const entryTransferredOut = entry.transferred_out || [];
+                    
+                    let matchesTransferIn = transferFilters.transferredIn.length === 0;
+                    let matchesTransferOut = transferFilters.transferredOut.length === 0;
+                    
+                    if (transferFilters.transferredIn.length > 0) {
+                        matchesTransferIn = transferFilters.transferredIn.every(player => 
+                            entryTransferredIn.includes(player)
+                        );
+                    }
+                    
+                    if (transferFilters.transferredOut.length > 0) {
+                        matchesTransferOut = transferFilters.transferredOut.every(player => 
+                            entryTransferredOut.includes(player)
+                        );
+                    }
+                    
+                    matchesTransferFilter = matchesTransferIn && matchesTransferOut;
                 }
+                
+                return matchesSearch && matchesPlayerFilter && matchesTransferFilter;
             });
 
             // Calculate filtered stats
