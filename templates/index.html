@@ -1266,20 +1266,20 @@
         
         function setupTransferFilterOptions() {
             // Get all unique players who have been transferred
-            const allTransferedPlayers = new Set();
+            const allTransferredPlayers = new Set();
             
             Object.values(allData.leaderboards).forEach(gw => {
                 gw.data.forEach(entry => {
                     if (entry.transferred_in) {
-                        entry.transferred_in.forEach(player => allTransferedPlayers.add(player));
+                        entry.transferred_in.forEach(player => allTransferredPlayers.add(player));
                     }
                     if (entry.transferred_out) {
-                        entry.transferred_out.forEach(player => allTransferedPlayers.add(player));
+                        entry.transferred_out.forEach(player => allTransferredPlayers.add(player));
                     }
                 });
             });
 
-            const sortedPlayers = Array.from(allTransferedPlayers).sort((a, b) => 
+            const sortedPlayers = Array.from(allTransferredPlayers).sort((a, b) => 
                 a.toLowerCase().localeCompare(b.toLowerCase())
             );
 
