@@ -771,6 +771,140 @@ def process():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/api/match-summary/<match_input>')
+def get_match_summary_json(match_input):
+    """Get processed match summary data as JSON without ASCII table generation"""
+    try:
+        # Extract match ID from various input formats (same as process_match)
+        match_id = extract_match_id(match_input)
+        
+        # Get match data and stats (same as process_match)
+        match_data = get_match_data(match_id, API_KEY)
+        match_stats = get_match_stats(match_id, API_KEY)
+        
+        # Generate match result (same as process_match)
+        match_result = generate_match_result(match_data)
+        
+        # Calculate scores (same as process_match)
+        scores = calculate_player_scores_for_match(match_data, match_stats, API_KEY)
+        match_summary = calculate_player_scores_for_each_map(match_data, match_stats, API_KEY)
+        
+        # First pass: infer missing roles in match_summary
+        for map_data in match_summary:
+            for team in map_data['teams']:
+                # Count current roles and find players with "-"
+                role_counts = {'Tank': 0, 'Damage': 0, 'Support': 0}
+                players_with_missing_roles = []
+                
+                for player in team['players']:
+                    player_role = player.get('role', '-')
+                    if player_role == '-':
+                        players_with_missing_roles.append(player)
+                    else:
+                        role_counts[player_role] = role_counts.get(player_role, 0) + 1
+                
+                # Determine missing roles (1 Tank, 2 Damage, 2 Support)
+                required_roles = {'Tank': 1, 'Damage': 2, 'Support': 2}
+                missing_roles = []
+                for role, required_count in required_roles.items():
+                    current_count = role_counts.get(role, 0)
+                    missing_roles.extend([role] * (required_count - current_count))
+                
+                # If we have missing roles and players with "-", try to infer
+                if missing_roles and players_with_missing_roles:
+                    if len(missing_roles) == 1 and len(players_with_missing_roles) == 1:
+                        # Simple case: one missing role, one player with "-"
+                        players_with_missing_roles[0]['role'] = missing_roles[0]
+                    else:
+                        # Multiple missing roles: use player's most played role from other maps
+                        for player in players_with_missing_roles:
+                            player_name = player['name']
+                            team_name = team['name']
+                            
+                            # Count this player's roles across other maps
+                            player_role_counts = {}
+                            for other_map in match_summary:
+                                if other_map == map_data:  # Skip current map
+                                    continue
+                                for other_team in other_map['teams']:
+                                    if other_team['name'] == team_name:
+                                        for other_player in other_team['players']:
+                                            if other_player['name'] == player_name:
+                                                other_role = other_player.get('role', '-')
+                                                if other_role != '-':
+                                                    player_role_counts[other_role] = player_role_counts.get(other_role, 0) + 1
+                            
+                            # Assign most played role if it's still needed
+                            if player_role_counts:
+                                most_played_role = max(player_role_counts, key=player_role_counts.get)
+                                if most_played_role in missing_roles:
+                                    player['role'] = most_played_role
+                                    missing_roles.remove(most_played_role)
+                            
+                            # If we still can't determine, assign any remaining missing role
+                            if player.get('role', '-') == '-' and missing_roles:
+                                player['role'] = missing_roles.pop(0)
+        
+        # Now enhance scores with role and aggregated stats
+        enhanced_scores = []
+        for team_scores in scores:
+            for team_name, players in team_scores.items():
+                enhanced_team = {team_name: {}}
+                
+                for player_name, score in players.items():
+                    # Track roles and aggregate stats from match_summary
+                    role_counts = {}
+                    aggregated_stats = {
+                        "damage": 0,
+                        "eliminations": 0,
+                        "deaths": 0,
+                        "healing": 0
+                    }
+                    
+                    # Aggregate stats and count roles across all maps for this player
+                    for map_data in match_summary:
+                        for team in map_data['teams']:
+                            if team['name'] == team_name:
+                                for player in team['players']:
+                                    if player['name'] == player_name:
+                                        player_role = player.get('role', '-')
+                                        
+                                        # Count role occurrences (now "-" should be rare)
+                                        if player_role != '-':
+                                            role_counts[player_role] = role_counts.get(player_role, 0) + 1
+                                        
+                                        # Aggregate stats
+                                        aggregated_stats['damage'] += int(player.get('damage', 0))
+                                        aggregated_stats['eliminations'] += int(player.get('eliminations', 0))
+                                        aggregated_stats['deaths'] += int(player.get('deaths', 0))
+                                        aggregated_stats['healing'] += int(player.get('healing', 0))
+                    
+                    # Determine most played role
+                    if role_counts:
+                        most_played_role = max(role_counts, key=role_counts.get)
+                    else:
+                        most_played_role = "-"
+                    
+                    enhanced_team[team_name][player_name] = {
+                        "score": score,
+                        "role": most_played_role,
+                        "stats": aggregated_stats
+                    }
+                
+                enhanced_scores.append(enhanced_team)
+        
+        # Return enhanced JSON with match result
+        return jsonify({
+            'match_id': match_id,
+            'match_result': match_result,
+            'scores': enhanced_scores,
+            'match_summary': match_summary,
+            'processed_at': datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/health')
 def health():
     """Health check endpoint."""
