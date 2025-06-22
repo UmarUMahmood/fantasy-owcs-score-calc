@@ -1,4 +1,5 @@
 from flask import Flask, request, render_template, jsonify, send_from_directory
+from flask_cors import CORS
 from dotenv import load_dotenv
 import os
 import requests
@@ -16,6 +17,21 @@ API_KEY = os.getenv("API_KEY")
 
 # Initialize Flask app
 app = Flask(__name__, template_folder='../templates', static_folder='../static')
+
+# Configure CORS
+CORS(app, resources={
+    r"/api/*": {
+        "origins": [
+            "https://fantasy-owcs-graphics-generator.vercel.app",
+            "http://localhost:3000",  # For local development
+            "http://127.0.0.1:3000",  # Alternative local development
+            "http://localhost:5000",  # Your local Flask development
+            "http://127.0.0.1:5000"   # Alternative local Flask development
+        ],
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"]
+    }
+})
 
 # ============================================================================
 # DECORATORS AND UTILITIES
