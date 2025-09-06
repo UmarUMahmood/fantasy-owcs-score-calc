@@ -171,9 +171,8 @@ def calculate_score(eliminations, deaths, damage, healing):
     """Calculate fantasy score based on player stats."""
     elimination_points = eliminations // 3
     death_points = deaths * -1
-    damage_points = (damage // 2000) * 0.5
-    healing_points = (healing // 2000) * 0.5
-    return elimination_points + death_points + damage_points + healing_points
+    damage_healing_points = ((damage + healing) // 1000) * 0.5
+    return elimination_points + death_points + damage_healing_points
 
 def calculate_player_scores_for_each_map(match_data, match_stats, api_key):
     """Calculate scores for each player on each map."""
